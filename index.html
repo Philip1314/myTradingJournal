@@ -3,44 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Trading Dashboard</title> <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pro Trading Dashboard</title> <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+
     <style>
-        /* Custom scrollbar for better aesthetics (optional) */
+        /* Custom scrollbar for dark mode */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #333; /* Darker track */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: #555; /* Darker thumb */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-            border-radius: 10px;
+            background: #777; /* Lighter on hover */
         }
         body {
-            font-family: 'Inter', sans-serif; /* Default Tailwind font, good for readability */
+            font-family: 'Inter', sans-serif;
+            /* Base dark mode styles */
+            background-color: #1a202c; /* Tailwind gray-900 */
+            color: #e2e8f0; /* Tailwind gray-200 */
         }
         /* Ensure table layout is fixed to prevent column width issues with long content */
         .table-fixed-layout {
             table-layout: fixed;
             width: 100%; /* Ensure table takes full width of container */
         }
-        .table-fixed-layout th, .table-fixed-layout td {
+         .table-fixed-layout th, .table-fixed-layout td {
             overflow-wrap: break-word; /* Break long words */
             word-wrap: break-word; /* Older browsers */
             hyphens: auto; /* Enable hyphenation */
             /* min-width is applied via Tailwind classes directly on th elements below */
         }
-        /* Optional: Add some height to the chart canvas */
-        #performanceChart {
-             max-height: 300px; /* Adjust as needed */
-             margin-top: 1.5rem; /* Add some space above the chart */
+        /* Chart Container adjustments for dark mode */
+        .chart-container {
+            position: relative; /* Needed for responsiveness */
+            height: 300px; /* Fixed height for chart */
+            margin-top: 1.5rem;
         }
 
         /* Styles for better mobile scroll performance */
@@ -49,99 +54,162 @@
             transform: translateZ(0); /* Promote hardware acceleration */
         }
 
+        /* Dark mode specific styles for elements */
+        .dark-card {
+            background-color: #2d3748; /* Tailwind gray-800 */
+            color: #e2e8f0; /* Tailwind gray-200 */
+        }
+
+        .dark-filter-bg {
+            background-color: #4a5568; /* Tailwind gray-700 */
+        }
+
+        .dark-input {
+             background-color: #2d3748; /* Tailwind gray-800 */
+             color: #e2e8f0; /* Tailwind gray-200 */
+             border-color: #4a5568; /* Tailwind gray-700 */
+        }
+         .dark-input::placeholder {
+             color: #a0aec0; /* Tailwind gray-500 */
+         }
+        .dark-input:focus {
+             border-color: #667eea; /* Tailwind indigo-500 */
+             box-shadow: 0 0 0 1px #667eea;
+        }
+
+         .dark-table-header {
+             background-color: #4a5568; /* Tailwind gray-700 */
+             color: #a0aec0; /* Tailwind gray-500 */
+         }
+
+         .dark-table-row {
+             background-color: #2d3748; /* Tailwind gray-800 */
+             color: #e2e8f0; /* Tailwind gray-200 */
+         }
+         .dark-table-row:hover {
+             background-color: #4a5568; /* Tailwind gray-700 */
+         }
+
+         .dark-divide-gray-200 > * + * {
+            border-color: #4a5568; /* Tailwind gray-700 */
+         }
+
+         /* Chart.js tooltip dark mode compatibility */
+        .chartjs-tooltip {
+            background: #333 !important;
+            color: #fff !important;
+            border: 1px solid #555 !important;
+        }
+
+        /* Filter button active state */
+        .filter-button.active {
+            background-color: #4c51bf; /* Darker indigo */
+            border-color: #434190;
+        }
+
+
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-800">
-
-    <div class="container mx-auto p-4 md:p-8">
+<body class="bg-gray-900 text-gray-200"> <div class="container mx-auto p-4 md:p-8">
 
         <header class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Trading Performance Dashboard</h1> </header>
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">Trading Performance Dashboard</h1> </header>
 
-        <section id="trading-analysis" class="mb-10 p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Trading Performance Analysis</h2>
-
-            <div id="analysisMetrics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-blue-700">Total Trades</p>
-                    <p id="totalTrades" class="text-xl font-bold text-blue-900">-</p>
-                </div>
-                 <div class="bg-green-50 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-green-700">Wins</p>
-                    <p id="totalWins" class="text-xl font-bold text-green-900">-</p>
-                </div>
-                 <div class="bg-red-50 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-red-700">Losses</p>
-                    <p id="totalLosses" class="text-xl font-bold text-red-900">-</p>
-                </div>
-                 <div class="bg-yellow-50 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-yellow-700">Win Rate</p>
-                    <p id="winRate" class="text-xl font-bold text-yellow-900">-</p>
-                </div>
+        <section id="trading-analysis" class="mb-10 p-6 rounded-lg shadow-lg dark-card"> <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-semibold text-gray-200">Performance Stats</h2> <div class="flex flex-wrap gap-2">
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 active" data-time-period="all">All</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="90d">Last 90 days</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="30d">Last 30 days</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="7d">Last 7 days</button>
+                 </div>
             </div>
+
+
+            <div class="mb-6">
+                 <p class="text-sm font-medium text-gray-400">Total PnL</p> <p id="totalPnL" class="text-3xl font-bold text-green-500">-</p> <p id="todayPnL" class="text-sm text-gray-400 mt-1">-</p> </div>
 
             <div class="chart-container">
                 <canvas id="performanceChart"></canvas>
             </div>
 
-        </section>
-
-        <section id="trading-performance" class="mb-10 p-6 bg-white rounded-lg shadow-lg"> <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Journal Data</h2>
-
-            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
-                <div>
-                    <label for="coinFilter" class="block text-sm font-medium text-gray-700 mb-1">Coin Name:</label>
-                    <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="confluencesFilter" class="block text-sm font-medium text-gray-700 mb-1">Confluences:</label>
-                    <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                </div>
-                <div>
-                    <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-                    <input type="text" id="dateFilter" placeholder="e.g., 2023-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                </div>
-                <button id="applyFiltersBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
-                <button id="resetFiltersBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button>
+            <div id="detailedMetrics" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+                 <div>
+                     <p class="text-sm font-medium text-gray-400">Win rate</p>
+                     <p id="winRate" class="text-xl font-bold">-</p>
+                 </div>
+                 <div>
+                     <p class="text-sm font-medium text-gray-400">Positions</p>
+                     <p id="totalTrades" class="text-xl font-bold">-</p> </div>
+                 <div>
+                     <p class="text-sm font-medium text-gray-400">Risk:reward ratio</p>
+                     <p id="riskReward" class="text-xl font-bold">-</p>
+                 </div>
+                 <div>
+                      <p class="text-sm font-medium text-gray-400">Avg PnL</p>
+                     <p id="avgPnL" class="text-xl font-bold">-</p> </div>
+                 <div>
+                     <p class="text-sm font-medium text-gray-400">Profit factor</p>
+                     <p id="profitFactor" class="text-xl font-bold">-</p>
+                 </div>
+                 <div>
+                      <p class="text-sm font-medium text-gray-400">Avg hold time</p>
+                     <p id="avgHoldTime" class="text-xl font-bold">-</p>
+                 </div>
             </div>
 
-            <div id="loadingMessage" class="text-center py-4 text-gray-600">Loading trading data...</div>
-            <div id="errorMessage" class="hidden text-center py-4 text-red-600 bg-red-100 border border-red-400 rounded-md"></div>
+             <div class="grid grid-cols-2 gap-4 mt-8 border-t border-gray-700 pt-6">
+                 <div>
+                     <p class="text-sm font-medium text-gray-400">Total profit</p>
+                     <p id="totalProfit" class="text-xl font-bold text-green-500">-</p>
+                     <p id="avgHoldTimeProfit" class="text-sm text-gray-400 mt-1">- Avg hold time: -</p>
+                      <p id="avgPnLProfit" class="text-sm text-gray-400 mt-1">- Avg PnL: -</p>
+                 </div>
+                  <div>
+                     <p class="text-sm font-medium text-gray-400">Total loss</p>
+                     <p id="totalLoss" class="text-xl font-bold text-red-500">-</p>
+                      <p id="avgHoldTimeLoss" class="text-sm text-gray-400 mt-1">- Avg hold time: -</p>
+                      <p id="avgPnLLoss" class="text-sm text-gray-400 mt-1">- Avg PnL: -</p>
+                 </div>
+             </div>
 
-            <p class="text-sm text-gray-500 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
-            <div class="overflow-x-auto rounded-lg shadow border border-gray-200 overflow-x-container">
-                <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Date</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Coin Name</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Result</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Confluences</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Time Frame</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Remarks</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Chart Link</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th>
+
+        </section>
+
+        <section id="trading-performance" class="mb-10 p-6 rounded-lg shadow-lg dark-card"> <h2 class="text-2xl font-semibold mb-6 text-gray-200">Trading Journal Data</h2> <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 rounded-md dark-filter-bg"> <div>
+                    <label for="coinFilter" class="block text-sm font-medium text-gray-300 mb-1">Coin Name:</label> <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
+                <div>
+                    <label for="confluencesFilter" class="block text-sm font-medium text-gray-300 mb-1">Confluences:</label> <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
+                <div>
+                    <label for="dateFilter" class="block text-sm font-medium text-gray-300 mb-1">Date:</label> <input type="text" id="dateFilter" placeholder="e.g., 2023-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
+                <button id="applyFiltersBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button> <button id="resetFiltersBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button> </div>
+
+            <div id="loadingMessage" class="text-center py-4 text-gray-400">Loading trading data...</div> <div id="errorMessage" class="hidden text-center py-4 text-red-400 bg-red-900 border border-red-700 rounded-md"></div> <p class="text-sm text-gray-400 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p> <div class="overflow-x-auto rounded-lg shadow border border-gray-700 overflow-x-container"> <table id="tradesTable" class="min-w-full divide-y dark-divide-gray-200 table-fixed-layout"> <thead class="dark-table-header"> <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[150px]">Confluences</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Time Frame</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[200px]">Remarks</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[120px]">Chart Link</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden">Timestamp</th>
                         </tr>
                     </thead>
-                    <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
+                    <tbody id="tradesTableBody" class="dark-table-row divide-y dark-divide-gray-200">
                         </tbody>
                 </table>
             </div>
-            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-500">No trades found matching your criteria.</p>
-        </section>
+            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p> </section>
 
         </div>
 
-    <footer class="text-center py-8 mt-10 text-sm text-gray-500">
-        <p>Trading data powered by Google Sheets.</p> </footer>
+    <footer class="text-center py-8 mt-10 text-sm text-gray-500"> <p>Trading data powered by Google Sheets.</p>
+    </footer>
 
     <script>
         // --- CONFIGURATION ---
         // IMPORTANT: Replace with your Google Sheet's CSV URL (File > Share > Publish to web > Select sheet & CSV > Copy URL)
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=752099388&single=true&output=csv';
-        // Google Form URL is no longer needed as the form section is removed.
-        // const GOOGLE_FORM_EMBED_URL = '...';
 
         // --- DOM ELEMENTS ---
         const tableBody = document.getElementById('tradesTableBody');
@@ -157,14 +225,29 @@
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
         // Analysis elements
-        const totalTradesElement = document.getElementById('totalTrades');
-        const totalWinsElement = document.getElementById('totalWins');
-        const totalLossesElement = document.getElementById('totalLosses');
-        const winRateElement = document.getElementById('winRate');
-        const performanceChartCanvas = document.getElementById('performanceChart');
+        const totalPnLElement = document.getElementById('totalPnL'); // New PnL elements
+        const todayPnLElement = document.getElementById('todayPnL'); // New PnL elements
+        const totalTradesElement = document.getElementById('totalTrades'); // Reusing
+        const winRateElement = document.getElementById('winRate'); // Reusing
+        const riskRewardElement = document.getElementById('riskReward'); // New
+        const avgPnLElement = document.getElementById('avgPnL'); // New
+        const profitFactorElement = document.getElementById('profitFactor'); // New
+        const avgHoldTimeElement = document.getElementById('avgHoldTime'); // New
+        const totalProfitElement = document.getElementById('totalProfit'); // New
+        const totalLossElement = document.getElementById('totalLoss'); // New
+        const avgHoldTimeProfitElement = document.getElementById('avgHoldTimeProfit'); // New
+        const avgHoldTimeLossElement = document.getElementById('avgHoldTimeLoss'); // New
+         const avgPnLProfitElement = document.getElementById('avgPnLProfit'); // New
+         const avgPnLLossElement = document.getElementById('avgPnLLoss'); // New
 
-        let allTrades = []; // To store all fetched trades for client-side filtering and analysis
+
+        const performanceChartCanvas = document.getElementById('performanceChart');
+        const timePeriodButtons = document.querySelectorAll('.filter-button'); // Time period buttons
+
+        let allTrades = []; // To store all fetched trades
+        let currentFilteredTrades = []; // Trades filtered by time period
         let performanceChart = null; // To hold the Chart.js instance
+        let currentTimePeriod = 'all'; // Default time period
 
         // --- DATA FETCHING AND PARSING ---
         async function fetchTrades() {
@@ -194,9 +277,9 @@
                      console.warn("CSV data was fetched but resulted in zero trades. CSV content:", csvData.substring(0, 500) + '...'); // Log first 500 chars
                 }
 
-                // Initial render and analysis with all data
-                renderTable(allTrades);
-                updateAnalysis(allTrades);
+                // Initial filter by time period (default 'all') and render everything
+                applyTimePeriodFilter(currentTimePeriod);
+
 
             } catch (error) {
                 console.error('Failed to fetch or parse trades:', error);
@@ -217,15 +300,22 @@
             const trades = [];
 
             // Column name mapping to match your headers (case-insensitive matching)
+            // Added potential headers for PnL, R:R, Hold Time, Entry/Exit Time
             const columnMappings = {
-                timestamp: ['timestamp'],
-                tradeDate: ['date', 'trade date'], // Look for 'Date' or 'Trade Date'
+                timestamp: ['timestamp'], // Google Form timestamp
+                tradeDate: ['date', 'trade date'],
                 coinName: ['coin name', 'coin'],
-                result: ['result', 'outcome'], // Look for 'Result' or 'Outcome'
+                result: ['result', 'outcome'],
                 confluences: ['confluences'],
                 timeFrame: ['time frame', 'timeframe', 'tf'],
                 remarks: ['remarks', 'notes'],
-                chartLink: ['chart link', 'link']
+                chartLink: ['chart link', 'link'],
+                // --- Potential new columns for analysis ---
+                pnl: ['pnl', 'profit/loss', 'gain/loss'], // Example PnL headers
+                riskReward: ['risk:reward', 'rr', 'r:r'], // Example R:R headers
+                entryTime: ['entry time', 'entry timestamp'], // Example Entry Time headers
+                exitTime: ['exit time', 'exit timestamp'] // Example Exit Time headers
+                // ----------------------------------------
             };
 
             function findHeaderIndex(headerNames) {
@@ -233,19 +323,18 @@
                     const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
                     if (index !== -1) return index;
                 }
-                 // Fallback: Check if header contains the name
                  for (const name of headerNames) {
                      const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
                      if (index !== -1) {
-                          console.warn(`Partial match for header: looking for '${name}', found '${headers[index]}'. Exact match preferred.`);
+                          // console.warn(`Partial match for header: looking for '${name}', found '${headers[index]}'.`); // Commented out to reduce console noise
                           return index;
                      }
                  }
-                console.warn(`Could not find header for: ${headerNames.join(' or ')}`);
+                // console.warn(`Could not find header for: ${headerNames.join(' or ')}`); // Commented out
                 return -1; // Header not found
             }
 
-            // Get indices for each of your specified columns
+            // Get indices for each column
             const timestampIdx = findHeaderIndex(columnMappings.timestamp);
             const dateIdx = findHeaderIndex(columnMappings.tradeDate);
             const coinNameIdx = findHeaderIndex(columnMappings.coinName);
@@ -254,11 +343,15 @@
             const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
             const remarksIdx = findHeaderIndex(columnMappings.remarks);
             const chartLinkIdx = findHeaderIndex(columnMappings.chartLink);
+            const pnlIdx = findHeaderIndex(columnMappings.pnl); // New index
+            const riskRewardIdx = findHeaderIndex(columnMappings.riskReward); // New index
+            const entryTimeIdx = findHeaderIndex(columnMappings.entryTime); // New index
+            const exitTimeIdx = findHeaderIndex(columnMappings.exitTime); // New index
 
-             // Check if essential headers are missing
+
              if (dateIdx === -1 || coinNameIdx === -1 || resultIdx === -1) {
-                 showError("Essential columns (Date, Coin Name, Result) not found in CSV headers. Please check your Google Sheet.");
-                 return []; // Return empty array if essential columns are missing
+                 showError("Essential columns (Date, Coin Name, Result) not found in CSV headers. Please check your Google Sheet columns.");
+                 return [];
              }
 
 
@@ -267,43 +360,423 @@
 
                  let values;
                  try {
-                      // Basic attempt to handle quoted commas - might not be perfect
-                      values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(val => val.trim().replace(/^"|"$/g, ''));
+                      values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(val => val ? val.trim().replace(/^"|"$/g, '') : ''); // Handle potentially empty cells
                  } catch (e) {
                       console.error("Failed to parse CSV line:", lines[i], e);
-                      continue; // Skip problematic line
+                      continue;
+                 }
+
+                 // Basic check to ensure values array has enough elements
+                 if (values.length < Math.max(timestampIdx, dateIdx, coinNameIdx, resultIdx, confluencesIdx, timeFrameIdx, remarksIdx, chartLinkIdx, pnlIdx, riskRewardIdx, entryTimeIdx, exitTimeIdx) + 1) {
+                     console.warn(`Skipping line ${i+1} due to insufficient columns:`, lines[i]);
+                     continue;
                  }
 
 
-                // Create trade object using found indices
                 const trade = {
-                    // Prefer 'Date' column, fallback to Timestamp's date part if available
-                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : 'N/A'),
+                    // Use Luxon to parse dates/timestamps for reliable date filtering later
+                    timestamp: timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx] : '',
+                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : ''),
                     coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
-                    // Trim and normalize result string for consistent matching
                     result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
                     confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
                     timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
                     remarks: remarksIdx !== -1 && values[remarksIdx] ? values[remarksIdx] : 'N/A',
                     chartLink: chartLinkIdx !== -1 && values[chartLinkIdx] ? values[chartLinkIdx] : 'N/A',
-                    timestamp: timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx] : '' // Keep timestamp for potential sorting later if needed
+                     // Parse new fields, handle errors
+                     pnl: pnlIdx !== -1 && values[pnlIdx] && !isNaN(parseFloat(values[pnlIdx])) ? parseFloat(values[pnlIdx]) : 0, // Parse PnL as number, default to 0 if N/A or invalid
+                     riskReward: riskRewardIdx !== -1 && values[riskRewardIdx] ? values[riskRewardIdx] : 'N/A', // Keep R:R as string
+                     entryTime: entryTimeIdx !== -1 && values[entryTimeIdx] ? values[entryTimeIdx] : '',
+                     exitTime: exitTimeIdx !== -1 && values[exitTimeIdx] ? values[exitTimeIdx] : ''
                 };
-                 // Only add trade if essential data exists
-                 if(trade.date !== 'N/A' && trade.coinName !== 'N/A' && trade.result !== 'N/A') {
+
+                 // Add Luxon DateTime objects for easier filtering/sorting
+                 trade.dateTime = trade.timestamp ? Luxon.DateTime.fromSQL(trade.timestamp, { zone: 'utc' }) : (trade.date ? Luxon.DateTime.fromISO(trade.date, { zone: 'utc' }) : null); // Attempt to parse timestamp (SQL format?) or date (ISO format?)
+                 if (!trade.dateTime || !trade.dateTime.isValid) {
+                      trade.dateTime = Luxon.DateTime.fromFormat(trade.date, 'MM/dd/yyyy', { zone: 'utc' }); // Try common date formats if needed
+                      if (!trade.dateTime.isValid) {
+                           console.warn(`Could not parse date/timestamp for trade: ${lines[i]}. Date: ${trade.date}, Timestamp: ${trade.timestamp}`);
+                           trade.dateTime = null; // Set to null if parsing fails
+                      }
+                 }
+
+                 trade.entryDateTime = trade.entryTime ? Luxon.DateTime.fromISO(trade.entryTime, { zone: 'utc' }) : null;
+                 trade.exitDateTime = trade.exitTime ? Luxon.DateTime.fromISO(trade.exitTime, { zone: 'utc' }) : null;
+
+
+                 if(trade.date !== 'N/A' && trade.coinName !== 'N/A' && trade.result !== 'N/A' && trade.dateTime) { // Require a valid date/timestamp
                     trades.push(trade);
                  } else {
-                     console.warn("Skipping trade due to missing essential data:", trade);
+                     console.warn("Skipping trade due to missing essential data or invalid date:", trade);
                  }
             }
-            // Sort trades by date/timestamp, most recent first
-            trades.sort((a, b) => {
-                 const dateA = new Date(a.timestamp || a.date);
-                 const dateB = new Date(b.timestamp || b.date);
-                 return dateB - dateA; // Descending order
-            });
+            // Sort trades by date/timestamp ascending for cumulative PnL calculation
+            trades.sort((a, b) => a.dateTime - b.dateTime);
 
             return trades;
         }
+
+        // --- FILTERING LOGIC ---
+
+        function applyTimePeriodFilter(period) {
+             currentTimePeriod = period;
+             const now = Luxon.DateTime.utc();
+             let startDate = null;
+
+             if (period === '7d') {
+                 startDate = now.minus({ days: 7 });
+             } else if (period === '30d') {
+                 startDate = now.minus({ days: 30 });
+             } else if (period === '90d') {
+                 startDate = now.minus({ days: 90 });
+             }
+             // 'all' means startDate remains null
+
+             currentFilteredTrades = allTrades.filter(trade => {
+                 if (!trade.dateTime || !trade.dateTime.isValid) {
+                     return false; // Exclude trades with invalid dates
+                 }
+                 return startDate ? trade.dateTime >= startDate : true; // Filter by start date if set
+             });
+
+             // Update active button class
+             timePeriodButtons.forEach(button => {
+                 if (button.dataset.timePeriod === period) {
+                     button.classList.add('active');
+                     button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                     button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                 } else {
+                     button.classList.remove('active');
+                     button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                     button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                 }
+             });
+
+             // Now apply keyword filters to the time-filtered trades
+             applyFilters();
+        }
+
+
+        function applyFilters() {
+            // Filter within the current time period trades (currentFilteredTrades)
+            const coinQuery = coinFilterInput.value.toLowerCase().trim();
+            const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
+            const dateQuery = dateFilterInput.value.trim();
+
+            const finalFilteredTrades = currentFilteredTrades.filter(trade => {
+                const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
+                const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
+                const tradeDate = trade.date ? trade.date : '';
+
+                const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
+                const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+                const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
+
+                return coinMatch && confluencesMatch && dateMatch;
+            });
+
+            renderTable(finalFilteredTrades);
+            updateAnalysis(finalFilteredTrades, currentFilteredTrades); // Pass both sets if needed for metrics vs graph
+        }
+
+        function resetFilters() {
+            coinFilterInput.value = '';
+            confluencesFilterInput.value = '';
+            dateFilterInput.value = '';
+             // Note: Reset does not reset the time period filter.
+            applyFilters(); // Re-apply keyword filters to the current time period
+        }
+
+        // --- ANALYSIS LOGIC ---
+         // Calculate hold time in minutes
+         function calculateHoldTime(entry, exit) {
+             if (!entry || !exit || !entry.isValid || !exit.isValid) {
+                 return 0; // Return 0 if invalid dates
+             }
+             const diff = exit.diff(entry, 'minutes');
+             return diff.minutes;
+         }
+
+         // Format hold time in hours and minutes
+         function formatHoldTime(totalMinutes) {
+             if (typeof totalMinutes !== 'number' || isNaN(totalMinutes) || totalMinutes <= 0) {
+                 return '-';
+             }
+             const hours = Math.floor(totalMinutes / 60);
+             const minutes = Math.round(totalMinutes % 60);
+             if (hours > 0) {
+                 return `${hours}h ${minutes}m`;
+             } else {
+                 return `${minutes}m`;
+             }
+         }
+
+
+        function calculateMetrics(trades) {
+            const total = trades.length;
+            let wins = 0;
+            let losses = 0;
+            let breakEvens = 0;
+            let totalPnL = 0;
+            let totalProfit = 0;
+            let totalLoss = 0;
+            let totalHoldTimeMinutes = 0;
+            let totalHoldTimeProfitMinutes = 0;
+            let totalHoldTimeLossMinutes = 0;
+            let winningTradesPnL = 0;
+            let losingTradesPnL = 0;
+            let profitableTradesCount = 0;
+            let losingTradesCount = 0;
+            let validHoldTimeCount = 0;
+
+
+            trades.forEach(trade => {
+                const result = trade.result.toLowerCase();
+                const pnl = trade.pnl || 0; // Use parsed PnL, default to 0
+
+                // Count Wins/Losses/Break Evens based on Result text
+                if (result === 'win' || result.includes('profit')) {
+                    wins++;
+                } else if (result === 'loss' || result.includes('loss')) {
+                    losses++;
+                } else {
+                    breakEvens++;
+                }
+
+                // Calculate PnL totals (based on PnL column)
+                totalPnL += pnl;
+                if (pnl > 0) {
+                    totalProfit += pnl;
+                    profitableTradesCount++;
+                } else if (pnl < 0) {
+                    totalLoss += pnl; // totalLoss will be negative
+                    losingTradesCount++;
+                }
+
+
+                 // Calculate Hold Time
+                 const holdTimeMinutes = calculateHoldTime(trade.entryDateTime, trade.exitDateTime);
+                 if (holdTimeMinutes > 0) {
+                     totalHoldTimeMinutes += holdTimeMinutes;
+                     validHoldTimeCount++;
+
+                     if (pnl > 0) {
+                         totalHoldTimeProfitMinutes += holdTimeMinutes;
+                     } else if (pnl < 0) {
+                         totalHoldTimeLossMinutes += holdTimeMinutes;
+                     }
+                 }
+                  // PnL for Avg PnL calculations per type
+                  if (pnl > 0) winningTradesPnL += pnl;
+                  if (pnl < 0) losingTradesPnL += pnl;
+
+
+            });
+
+            const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) + '%' : 'N/A';
+             const avgPnL = total > 0 ? (totalPnL / total).toFixed(2) : 'N/A';
+             const profitFactor = totalLoss < 0 ? (totalProfit / Math.abs(totalLoss)).toFixed(2) : (totalProfit > 0 ? 'Inf' : 'N/A'); // Profit Factor = Gross Profit / Gross Loss
+             const avgHoldTime = validHoldTimeCount > 0 ? formatHoldTime(totalHoldTimeMinutes / validHoldTimeCount) : '-';
+             const avgHoldTimeProfit = profitableTradesCount > 0 && totalHoldTimeProfitMinutes > 0 ? formatHoldTime(totalHoldTimeProfitMinutes / profitableTradesCount) : '-';
+             const avgHoldTimeLoss = losingTradesCount > 0 && totalHoldTimeLossMinutes > 0 ? formatHoldTime(totalHoldTimeLossMinutes / losingTradesCount) : '-';
+             const avgPnLProfit = profitableTradesCount > 0 ? (winningTradesPnL / profitableTradesCount).toFixed(2) : '-';
+             const avgPnLLoss = losingTradesCount > 0 ? (losingTradesPnL / losingTradesCount).toFixed(2) : '-'; // Will be negative or 0
+
+             // Calculate Today's PnL
+             const today = Luxon.DateTime.utc().startOf('day');
+             const todayTrades = trades.filter(trade => trade.dateTime && trade.dateTime.startOf('day').equals(today));
+             const todayPnL = todayTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0).toFixed(2);
+
+
+            return {
+                total,
+                wins,
+                losses,
+                breakEvens,
+                winRate,
+                totalPnL: totalPnL.toFixed(2), // Format PnL to 2 decimal places
+                todayPnL: todayPnL,
+                riskReward: trades.length > 0 && trades.every(t => t.riskReward !== 'N/A') ? (trades.reduce((sum, t) => sum + parseRR(t.riskReward), 0) / trades.length).toFixed(2) + ':1' : 'N/A', // Basic average R:R (requires R:R like 1:2 format)
+                avgPnL,
+                profitFactor,
+                avgHoldTime,
+                totalProfit: totalProfit.toFixed(2),
+                totalLoss: totalLoss.toFixed(2),
+                avgHoldTimeProfit,
+                avgHoldTimeLoss,
+                 avgPnLProfit,
+                 avgPnLLoss
+            };
+        }
+
+         // Helper to parse R:R string like "1:2" into a number 2
+         function parseRR(rrString) {
+             if (typeof rrString !== 'string') return 0;
+             const parts = rrString.split(':');
+             if (parts.length === 2) {
+                 const ratio = parseFloat(parts[1]);
+                 return isNaN(ratio) ? 0 : ratio;
+             }
+             return 0;
+         }
+
+
+        function renderMetrics(metrics) {
+            totalPnLElement.textContent = `${metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL}`;
+             totalPnLElement.className = `text-3xl font-bold ${metrics.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`; // Apply color based on value
+            todayPnLElement.textContent = `Today's PnL: ${metrics.todayPnL >= 0 ? '+' : ''}${metrics.todayPnL}`;
+
+
+            totalTradesElement.textContent = metrics.total;
+            winRateElement.textContent = metrics.winRate;
+            riskRewardElement.textContent = metrics.riskReward;
+            avgPnLElement.textContent = `${metrics.avgPnL !== 'N/A' && metrics.avgPnL >= 0 ? '+' : ''}${metrics.avgPnL}`;
+             avgPnLElement.className = `text-xl font-bold ${metrics.avgPnL !== 'N/A' && metrics.avgPnL >= 0 ? 'text-green-500' : (metrics.avgPnL !== 'N/A' && metrics.avgPnL < 0 ? 'text-red-500' : '')}`;
+
+            profitFactorElement.textContent = metrics.profitFactor;
+            avgHoldTimeElement.textContent = metrics.avgHoldTime;
+
+             totalProfitElement.textContent = `+${metrics.totalProfit}`;
+             totalLossElement.textContent = `${metrics.totalLoss}`; // totalLoss is already negative
+
+             avgHoldTimeProfitElement.textContent = `- Avg hold time: ${metrics.avgHoldTimeProfit}`;
+             avgHoldTimeLossElement.textContent = `- Avg hold time: ${metrics.avgHoldTimeLoss}`;
+             avgPnLProfitElement.textContent = `- Avg PnL: +${metrics.avgPnLProfit}`;
+             avgPnLLossElement.textContent = `- Avg PnL: ${metrics.avgPnLLoss}`;
+        }
+
+         // Prepares data for the Cumulative PnL line chart
+         function prepareCumulativePnLChartData(trades) {
+             // Trades are already sorted by date/timestamp descending from parseCSV
+
+             const dataPoints = [];
+             let cumulativePnL = 0;
+
+             // Process trades in date order (already sorted ascending)
+             trades.forEach(trade => {
+                 if (trade.dateTime && trade.dateTime.isValid) {
+                    cumulativePnL += trade.pnl || 0;
+                    // Add a data point for this trade's date and the cumulative PnL up to this point
+                    dataPoints.push({
+                         x: trade.dateTime.toJSDate(), // Chart.js uses JS Date objects for time series
+                         y: cumulativePnL
+                    });
+                 }
+             });
+
+             return dataPoints;
+         }
+
+
+        function renderChart(tradesForChart) {
+            // Destroy existing chart if it exists
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+             const dataPoints = prepareCumulativePnLChartData(tradesForChart);
+
+            const ctx = performanceChartCanvas.getContext('2d');
+
+            performanceChart = new Chart(ctx, {
+                type: 'line', // Changed to line chart
+                data: {
+                    datasets: [{
+                        label: 'Cumulative PnL',
+                        data: dataPoints,
+                        borderColor: 'rgba(75, 192, 192, 1)', // Greenish line
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Light fill below the line
+                        fill: true, // Fill area below the line
+                        tension: 0.1, // Smooth the line
+                        pointRadius: 3, // Size of data points
+                         pointBackgroundColor: 'rgba(75, 192, 192, 1)'
+                    }]
+                },
+                options: {
+                     responsive: true,
+                     maintainAspectRatio: false, // Allow height control via CSS
+                    scales: {
+                        x: {
+                            type: 'time', // Use time scale for dates
+                            time: {
+                                unit: 'day', // Display by day
+                                tooltipFormat: 'MMM d, yyyy', // Tooltip format
+                                displayFormats: {
+                                    day: 'MMM d' // Axis label format
+                                }
+                            },
+                             title: {
+                                display: true,
+                                text: 'Date'
+                             },
+                             ticks: {
+                                font: {
+                                   // color: '#a0aec0' // Tailwind gray-500 for ticks
+                                }
+                             },
+                              grid: {
+                                color: '#4a5568' // Tailwind gray-700 for grid lines
+                              }
+                        },
+                        y: {
+                            beginAtZero: false, // PnL can be negative
+                             title: {
+                                display: true,
+                                text: 'Cumulative PnL ($)' // Assuming PnL is in USD
+                             },
+                             ticks: {
+                                callback: function(value, index, ticks) {
+                                     return '$' + value.toFixed(2); // Format Y-axis labels as currency
+                                },
+                                font: {
+                                   // color: '#a0aec0' // Tailwind gray-500 for ticks
+                                }
+                             },
+                              grid: {
+                                color: '#4a5568' // Tailwind gray-700 for grid lines
+                              }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Cumulative Profit/Loss Over Time',
+                             color: '#e2e8f0' // Title color for dark mode
+                        },
+                         legend: {
+                            display: false // Hide legend for a single dataset
+                        },
+                         tooltip: { // Tooltip styling for dark mode
+                              callbacks: {
+                                   title: function(context) {
+                                        return context[0].label; // Show date
+                                   },
+                                   label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += '$' + context.raw.y.toFixed(2); // Show cumulative PnL
+                                        return label;
+                                   }
+                              }
+                         }
+                    }
+                }
+            });
+        }
+
+        // Function to update analysis (metrics + chart)
+        // Takes the list of trades relevant to the currently selected time period and keyword filters
+        function updateAnalysis(tradesForMetrics, tradesForChart) {
+             // Calculate metrics based on the list filtered by time AND keywords
+            const metrics = calculateMetrics(tradesForMetrics);
+            renderMetrics(metrics);
+
+            // Render chart based on the list filtered *only* by time period (to show PnL over the selected period)
+             renderChart(tradesForChart);
+        }
+
 
         // --- RENDERING TABLE ---
         function renderTable(tradesToRender) {
@@ -317,7 +790,7 @@
 
             tradesToRender.forEach(trade => {
                 const row = tableBody.insertRow();
-                row.className = 'hover:bg-gray-50 transition-colors duration-150';
+                row.className = 'hover:bg-gray-700 transition-colors duration-150'; // Adjusted hover color
 
                 // Order of cells must match the table headers in HTML
                 insertCell(row, trade.date);
@@ -329,14 +802,14 @@
 
                 // Special handling for chart link
                 const chartLinkCell = row.insertCell();
-                chartLinkCell.className = 'px-4 py-3 text-sm text-gray-700 whitespace-normal'; // Allow wrapping
+                chartLinkCell.className = 'px-4 py-3 text-sm text-gray-400 whitespace-normal'; // Adjusted color/wrapping
                 if (trade.chartLink && trade.chartLink !== 'N/A' && (trade.chartLink.startsWith('http://') || trade.chartLink.startsWith('https://'))) {
                     const link = document.createElement('a');
                     link.href = trade.chartLink;
                     link.textContent = "View Chart";
                     link.target = "_blank"; // Open in new tab
                     link.rel = "noopener noreferrer";
-                    link.className = "text-indigo-600 hover:text-indigo-800 underline";
+                    link.className = "text-indigo-400 hover:text-indigo-300 underline"; // Adjusted color
                     chartLinkCell.appendChild(link);
                 } else {
                     chartLinkCell.textContent = trade.chartLink; // Display as text
@@ -350,7 +823,7 @@
         function insertCell(row, text, allowWrap = false) {
             const cell = row.insertCell();
             cell.textContent = text;
-            cell.className = 'px-4 py-3 text-sm text-gray-700';
+            cell.className = 'px-4 py-3 text-sm text-gray-300'; // Adjusted text color
             if (allowWrap) {
                 cell.classList.add('whitespace-normal');
             } else {
@@ -364,147 +837,24 @@
             errorMessage.style.display = 'block';
         }
 
-        // --- ANALYSIS LOGIC ---
-        function calculateMetrics(trades) {
-            const total = trades.length;
-            let wins = 0;
-            let losses = 0;
-            let breakEvens = 0;
-
-            trades.forEach(trade => {
-                const result = trade.result.toLowerCase();
-                if (result === 'win' || result.includes('profit')) { // Check for 'win' or 'profit'
-                    wins++;
-                } else if (result === 'loss' || result.includes('loss')) { // Check for 'loss'
-                    losses++;
-                } else {
-                    breakEvens++; // Count anything else as break even
-                }
-            });
-
-            const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) + '%' : 'N/A';
-
-            return {
-                total,
-                wins,
-                losses,
-                breakEvens,
-                winRate
-            };
-        }
-
-        function renderMetrics(metrics) {
-            totalTradesElement.textContent = metrics.total;
-            totalWinsElement.textContent = metrics.wins;
-            totalLossesElement.textContent = metrics.losses;
-            winRateElement.textContent = metrics.winRate;
-        }
-
-        function renderChart(metrics) {
-            // Destroy existing chart if it exists
-            if (performanceChart) {
-                performanceChart.destroy();
-            }
-
-            const ctx = performanceChartCanvas.getContext('2d');
-
-            performanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Wins', 'Losses', 'Break Evens'],
-                    datasets: [{
-                        label: 'Trade Count',
-                        data: [metrics.wins, metrics.losses, metrics.breakEvens],
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.6)', // Greenish for Wins
-                            'rgba(255, 99, 132, 0.6)', // Reddish for Losses
-                            'rgba(255, 205, 86, 0.6)'  // Yellowish for Break Evens
-                        ],
-                        borderColor: [
-                             'rgba(75, 192, 192, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(255, 205, 86, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                     responsive: true,
-                     maintainAspectRatio: false, // Allow height control via CSS
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                // Ensure ticks are integers
-                                callback: function(value) {
-                                    if (Number.isInteger(value)) {
-                                        return value;
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Trade Outcomes Distribution'
-                        },
-                        legend: {
-                            display: false // Hide legend for a single dataset
-                        }
-                    }
-                }
-            });
-        }
-
-        // Function to update both metrics and chart
-        function updateAnalysis(trades) {
-            const metrics = calculateMetrics(trades);
-            renderMetrics(metrics);
-            renderChart(metrics); // Render chart based on calculated metrics
-        }
-
-
-        // --- FILTERING LOGIC ---
-        function applyFilters() {
-            const coinQuery = coinFilterInput.value.toLowerCase().trim();
-            const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
-            const dateQuery = dateFilterInput.value.trim(); // Date might need specific format handling if using date pickers
-
-            const filteredTrades = allTrades.filter(trade => {
-                const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
-                const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
-                const tradeDate = trade.date ? trade.date : ''; // Assumes date is in a consistent format
-
-                const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
-                const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
-                // Simple string includes check for date, assumes YYYY-MM-DD or similar format
-                const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
-
-                return coinMatch && confluencesMatch && dateMatch;
-            });
-
-            renderTable(filteredTrades);
-            updateAnalysis(filteredTrades); // Update analysis with filtered data
-        }
-
-        function resetFilters() {
-            coinFilterInput.value = '';
-            confluencesFilterInput.value = '';
-            dateFilterInput.value = '';
-            renderTable(allTrades); // Render table with all data
-            updateAnalysis(allTrades); // Update analysis with all data
-        }
 
         // --- EVENT LISTENERS ---
         applyFiltersBtn.addEventListener('click', applyFilters);
         resetFiltersBtn.addEventListener('click', resetFilters);
 
+        // Add event listeners for time period buttons
+        timePeriodButtons.forEach(button => {
+             button.addEventListener('click', () => {
+                 const period = button.dataset.timePeriod;
+                 applyTimePeriodFilter(period);
+             });
+        });
+
+
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             // Fetch trades on page load
             fetchTrades();
-             // Removed Google Form related checks and warnings as the section is gone.
         });
 
     </script>
