@@ -37,7 +37,7 @@
             overflow-wrap: break-word; /* Break long words */
             word-wrap: break-word; /* Older browsers */
             hyphens: auto; /* Enable hyphenation */
-        }
+         }
         /* Removed Chart Container adjustments */
 
 
@@ -285,7 +285,7 @@
             tableBody.innerHTML = '';
             paginationControls.style.display = 'none'; // Hide pagination while loading
 
-            console.log('Attempting to fetch data from:', GOOGLE_SHEET_CSV_URL);
+            console.log('Attempting to fetch data from:', GOOGLE_SHEET_CSV_URL); // Log the URL being fetched
 
             if (GOOGLE_SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE') || !GOOGLE_SHEET_CSV_URL || !GOOGLE_SHEET_CSV_URL.startsWith('https://docs.google.com/spreadsheets/d/')) {
                  showError('Error: Google Sheet CSV URL is not configured correctly. Please update the GOOGLE_SHEET_CSV_URL variable in the script and ensure it is a published CSV link.');
@@ -296,24 +296,30 @@
             try {
                 // Add timestamp to prevent caching
                 const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&timestamp=${new Date().getTime()}`);
-                console.log('Fetch response status:', response.status);
+                console.log('Fetch response status:', response.status); // Log the response status
                 if (!response.ok) {
                     let errorText = `Network response was not ok: ${response.status}`;
-                    try { errorText += ` - ${await response.text()}`; } catch(e) {}
-                    console.error('Fetch failed:', errorText);
-                    throw new Error(errorText);
+                    try {
+                         const responseBody = await response.text();
+                         if (responseBody) {
+                              // Append only the first 200 characters of the response body to avoid massive logs/errors
+                              errorText += ` - Response body preview: ${responseBody.substring(0, 200)}...`;
+                         }
+                    } catch(e) {
+                         console.warn("Could not read response body for error details:", e);
+                    }
+                    console.error('Fetch failed:', errorText); // Log the specific fetch error
+                    throw new Error(errorText); // Throw the constructed error
                 }
                 const csvData = await response.text();
-                console.log('Fetched CSV Data Preview:', csvData.substring(0, 500) + '...');
+                console.log('Fetched CSV Data Preview:', csvData.substring(0, 500) + '...'); // Log a preview of fetched data
                 allTrades = parseCSV(csvData);
-                console.log('Parsed Trades:', allTrades);
+                console.log('Parsed Trades:', allTrades); // Log the parsed trade objects
 
                 if (allTrades.length === 0) {
                     console.warn("No trades parsed from CSV data.");
-                    // No trades to display, analysis will show zeros
-                    updateAnalysis([]);
-                    renderTable([]); // Render empty table
-                    paginationControls.style.display = 'none'; // Ensure pagination stays hidden
+                    updateAnalysis([]); // No trades to display, analysis will show zeros
+                    renderTable([]); // Render empty table (pagination will be hidden)
                 } else {
                     console.log(`Successfully parsed ${allTrades.length} trades.`);
                     // Data loaded successfully, apply initial filters
@@ -452,7 +458,10 @@
                 // Date Parsing: Try to create a valid Date object for filtering
                 let tradeDateObj = null;
                 if (trade.date && trade.date !== 'N/A') {
-                    // Attempt to parse MM/DD/YYYY or YYYY-MM-DD or similar
+                    // Attempt to parse MM/DD/YYYY or
+```html
+(\d{4})-(\d{1,2})-(\d{1,2})$/); //```html
+MM/DD/YYYY or YYYY-MM-DD
                     const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
                     const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); // YYYY-MM-DD
 
@@ -491,7 +500,7 @@
                      trades.push(trade);
                      // console.log('Added valid trade:', trade); // Log valid trades
                  } else {
-                     console.warn("Skipping trade due to missing essential data or invalid date:", trade, `(Line ${i+1})`);
+                     console.warn("Skipping trade due to missing essential data or invalid data:", trade, `(Line ${i+1})`);
                  }
             }
 
@@ -516,7 +525,7 @@
              const year = date.getFullYear();
              const month = ('0' + (date.getMonth() + 1)).slice(-2); // Months are 0-indexed
              const day = ('0' + date.getDate()).slice(-2);
-             return `${year}-${month}-${day}`;
+             return `<span class="math-inline">\{year\}\-</span>{month}-${day}`;
          }
 
 
@@ -620,16 +629,36 @@
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const tradesToDisplay = filteredTrades.slice(startIndex, endIndex);
 
-            console.log(`Displaying trades from index ${startIndex} to ${endIndex-1} (Page ${currentPage}).`);
+            console.log(`Displaying trades from index ${startIndex} to ${Math.min(endIndex, filteredTrades.length) - 1} (Page ${currentPage}).`); // Improved log
 
-            if (tradesToDisplay.length === 0) {
-                noResultsMessage.style.display = filteredTrades.length === 0 ? 'block' : 'none'; // Show 'No results' only if filteredTrades is empty
-                 paginationControls.style.display = 'none'; // Hide pagination if no trades to display
+
+            if (filteredTrades.length === 0) { // Check total filtered trades, not just tradesToDisplay
+                noResultsMessage.style.display = 'block';
+                 paginationControls.style.display = 'none'; // Hide pagination if no trades exist after filtering
+                 updatePaginationControls(); // Ensure buttons are disabled and status reflects 0 trades
                 return;
             } else {
                 noResultsMessage.style.display = 'none';
-                 paginationControls.style.display = 'flex'; // Show pagination if trades are displayed
+                 paginationControls.style.display = 'flex'; // Show pagination if there are filtered trades
             }
+
+             if (tradesToDisplay.length === 0 && filteredTrades.length > 0) {
+                  // This case happens if we are on a page beyond the last page with data
+                  // Should ideally not happen if pagination controls are correctly managed,
+                  // but as a fallback, go back to the last valid page.
+                  const totalPages = Math.ceil(filteredTrades.length / ITEMS_PER_PAGE);
+                  if (currentPage > totalPages) {
+                       currentPage = totalPages > 0 ? totalPages : 1; // Go to last page or page 1 if no pages
+                       console.warn(`Page ${currentPage + 1} is empty, redirecting to page ${currentPage}.`);
+                       displayCurrentPage(); // Recurse to display the correct page
+                       return; // Exit current call
+                  }
+                  // If tradesToDisplay is 0 but filteredTrades > 0 and we are on a valid page, something is wrong with slice
+                  console.error("Pagination slice returned 0 trades unexpectedly.", {currentPage, startIndex, endIndex, filteredTradesLength: filteredTrades.length});
+                  noResultsMessage.style.display = 'block'; // Show message as no trades for this page
+                  return; // Exit if no trades to display on this page
+             }
+
 
             tradesToDisplay.forEach(trade => {
                 const row = document.createElement('tr');
@@ -715,13 +744,14 @@
              const totalItems = filteredTrades.length;
              const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-             pageStatusSpan.textContent = `Page ${currentPage} of ${totalPages}`;
+             pageStatusSpan.textContent = `Page ${currentPage} of ${totalPages > 0 ? totalPages : 1}`; // Show Page 1 of 1 if 0 trades
 
              // Enable/disable buttons
              prevPageBtn.disabled = currentPage === 1;
-             nextPageBtn.disabled = currentPage >= totalPages;
+             nextPageBtn.disabled = currentPage >= totalPages || totalPages === 0; // Disable next if on last page or no pages
 
-              // Add disabled styling
+
+              // Add disabled styling (using opacity/cursor defined in CSS)
               if (prevPageBtn.disabled) {
                   prevPageBtn.classList.add('btn-disabled');
               } else {
@@ -734,8 +764,8 @@
                   nextPageBtn.classList.remove('btn-disabled');
               }
 
-             // Show/hide pagination controls based on total items
-             if (totalItems > ITEMS_PER_PAGE) {
+             // Show/hide pagination controls container
+             if (totalItems > 0) { // Show if there's at least one filtered item
                   paginationControls.style.display = 'flex';
              } else {
                   paginationControls.style.display = 'none';
@@ -900,11 +930,11 @@
 
                  htmlContent += `
                      <tr>
-                         <td>${trade.displayDate || trade.date || 'N/A'}</td>
-                         <td>${trade.coinName}</td>
-                         <td class="${resultClass}">${trade.result}</td>
-                         <td style="white-space: normal;">${trade.confluences}</td>
-                         <td>${trade.timeFrame}</td>
+                         <td><span class="math-inline">\{trade\.displayDate \|\| trade\.date \|\| 'N/A'\}</td\>
+<td\></span>{escapeHtml(trade.coinName)}</td>
+                         <td class="<span class="math-inline">\{resultClass\}"\></span>{escapeHtml(trade.result)}</td>
+                         <td style="white-space: normal;"><span class="math-inline">\{escapeHtml\(trade\.confluences\)\}</td\>
+<td\></span>{escapeHtml(trade.timeFrame)}</td>
                          <td>${chartLinkHtml}</td>
                      </tr>
                  `;
@@ -926,6 +956,16 @@
                  alert("Please allow pop-ups for this website to view the entire data.");
              }
         }
+
+         // Helper function to escape HTML entities in generated content
+         function escapeHtml(unsafe) {
+             return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+         }
 
 
         // --- EVENT LISTENERS ---
