@@ -97,6 +97,12 @@
             filter: invert(1); /* Make calendar icon visible in dark mode */
         }
 
+        /* Pagination button active state */
+        .pagination-button.active {
+            background-color: #4c51bf; /* Darker indigo */
+            border-color: #434190;
+        }
+
         /* --- Mobile Table Styles (Card View) --- */
         @media (max-width: 767px) { /* Apply on screens smaller than md (768px) */
             #tradesTable {
@@ -284,6 +290,15 @@
                         </tbody>
                 </table>
             </div>
+
+            <div id="paginationControls" class="flex justify-center items-center mt-6 space-x-2">
+                <button id="prevPageBtn" class="px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                <div id="pageNumbers" class="flex space-x-1">
+                    </div>
+                <button id="nextPageBtn" class="px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+            </div>
+
+
             <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p>
         </section>
 
@@ -297,6 +312,7 @@
         // --- CONFIGURATION ---
         // !!! IMPORTANT !!! Replace this with your published Google Sheet CSV URL
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=1826611002&single=true&output=csv';
+        const ITEMS_PER_PAGE = 10; // Number of trades to show per page
 
 
         // --- DOM ELEMENTS ---
@@ -317,9 +333,6 @@
         const totalTradesElement = document.getElementById('totalTrades');
         const totalWinsElement = document.getElementById('totalWins');
         const totalLossesElement = document.getElementById('totalLosses');
-        // Removed winRateElement as the HTML element is removed
-        // const winRateElement = document.getElementById('winRate');
-
 
         // Elements for the Win/Loss bar visualization
         const winRatePercentText = document.getElementById('winRatePercentText');
@@ -327,11 +340,19 @@
         const winBar = document.getElementById('winBar');
         const lossBar = document.getElementById('lossBar');
 
-
         const timePeriodButtons = document.querySelectorAll('.filter-button');
 
-        let allTrades = [];
-        let currentTimePeriod = 'all';
+        // Pagination elements
+        const paginationControls = document.getElementById('paginationControls');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageNumbersContainer = document.getElementById('pageNumbers');
+
+
+        let allTrades = []; // Stores all trades fetched from the sheet
+        let currentFilteredTrades = []; // Stores trades after applying date and keyword filters
+        let currentPage = 1; // Current page number
+
 
         // Get header texts for data-label attributes - Ensure these match your table headers
         const tableHeaders = {
@@ -353,6 +374,7 @@
             errorMessage.style.display = 'none';
             noResultsMessage.style.display = 'none';
             tableBody.innerHTML = '';
+            paginationControls.style.display = 'none'; // Hide pagination while loading
 
             console.log('Attempting to fetch data from:', GOOGLE_SHEET_CSV_URL); // Log the URL being fetched
 
@@ -386,7 +408,7 @@
                 }
 
 
-                applyTimePeriodFilter('all'); // Initial filter: Apply 'All' time period
+                applyTimePeriodFilter('all'); // Initial filter: Apply 'All' time period, which also triggers applyFilters and rendering
 
             } catch (error) {
                 console.error('Failed to fetch or parse trades:', error);
@@ -706,7 +728,7 @@
              console.log('Keyword Filters:', {coin: coinQuery, confluences: confluencesQuery}); // Log keyword queries
 
 
-             const finalFilteredTrades = filteredTrades.filter(trade => {
+             currentFilteredTrades = filteredTrades.filter(trade => {
                  const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
                  const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
                  const tradePosition = trade.position ? trade.position.toLowerCase() : ''; // Include position in filter check (optional)
@@ -721,11 +743,16 @@
                  return coinMatch && confluencesMatch;
              });
 
-             console.log(`Filtered by keywords: ${finalFilteredTrades.length} trades remaining.`); // Log trades after keyword filter
+             console.log(`Filtered by keywords: ${currentFilteredTrades.length} trades remaining.`); // Log trades after keyword filter
 
+             // Reset to the first page whenever filters are applied
+             currentPage = 1;
 
-             renderTable(finalFilteredTrades);
-             updateAnalysis(finalFilteredTrades);
+             // Update analysis metrics based on the fully filtered list
+             updateAnalysis(currentFilteredTrades);
+             // Render the table for the current page and update pagination controls
+             renderCurrentPageTable();
+             renderPaginationControls();
          }
 
         function resetFilters() {
@@ -789,8 +816,6 @@
             if (totalTradesElement) totalTradesElement.textContent = metrics.total;
             if (totalWinsElement) totalWinsElement.textContent = metrics.wins;
             if (totalLossesElement) totalLossesElement.textContent = metrics.losses;
-            // winRateElement is removed, so we don't try to update it
-            // if (winRateElement) winRateElement.textContent = metrics.winRate;
         }
 
          // Function to render the Win/Loss bar
@@ -814,17 +839,26 @@
 
 
         // --- TABLE RENDERING ---
-        function renderTable(trades) {
+        // This function now renders only the trades for the current page
+        function renderCurrentPageTable() {
             tableBody.innerHTML = ''; // Clear existing rows
 
-            if (trades.length === 0) {
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const tradesToDisplay = currentFilteredTrades.slice(startIndex, endIndex);
+
+            if (tradesToDisplay.length === 0) {
                 noResultsMessage.style.display = 'block';
+                // Hide pagination if there are no results on any page
+                paginationControls.style.display = 'none';
                 return;
             } else {
                 noResultsMessage.style.display = 'none';
+                 // Show pagination if there are results
+                paginationControls.style.display = 'flex';
             }
 
-            trades.forEach(trade => {
+            tradesToDisplay.forEach(trade => {
                 const row = document.createElement('tr');
                 row.classList.add('dark-table-row'); // Apply dark mode row styling
 
@@ -934,10 +968,93 @@
             });
         }
 
+        // --- PAGINATION LOGIC ---
+
+        function renderPaginationControls() {
+            pageNumbersContainer.innerHTML = ''; // Clear existing page numbers
+
+            const totalTrades = currentFilteredTrades.length;
+            const totalPages = Math.ceil(totalTrades / ITEMS_PER_PAGE);
+
+            if (totalPages <= 1) {
+                paginationControls.style.display = 'none'; // Hide controls if only one page
+                return;
+            }
+
+            paginationControls.style.display = 'flex'; // Show controls
+
+            // Add page number buttons
+            // Display a limited number of page buttons around the current page
+            const maxPageButtons = 5; // Max number of page buttons to show
+            let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            // Adjust startPage if endPage hits totalPages
+            if (endPage - startPage + 1 < maxPageButtons) {
+                startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.classList.add('px-3', 'py-1', 'text-sm', 'rounded', 'border', 'border-gray-600', 'bg-gray-700', 'text-gray-200', 'hover:bg-gray-600', 'pagination-button');
+                pageButton.textContent = i;
+                pageButton.dataset.page = i;
+
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                    pageButton.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                    pageButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                }
+
+                pageButton.addEventListener('click', () => {
+                    goToPage(i);
+                });
+                pageNumbersContainer.appendChild(pageButton);
+            }
+
+            // Update Previous/Next button states
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+
+            // Add event listeners for Previous/Next
+            prevPageBtn.removeEventListener('click', goToPreviousPage); // Remove old listeners
+            nextPageBtn.removeEventListener('click', goToNextPage); // Remove old listeners
+
+            prevPageBtn.addEventListener('click', goToPreviousPage);
+            nextPageBtn.addEventListener('click', goToNextPage);
+        }
+
+        function goToPage(pageNumber) {
+            const totalPages = Math.ceil(currentFilteredTrades.length / ITEMS_PER_PAGE);
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                currentPage = pageNumber;
+                renderCurrentPageTable();
+                renderPaginationControls();
+                 // Optional: Scroll to the top of the table
+                 document.getElementById('tradesTable').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        function goToNextPage() {
+            const totalPages = Math.ceil(currentFilteredTrades.length / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        }
+
+
         // --- ERROR HANDLING ---
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
+            paginationControls.style.display = 'none'; // Hide pagination on error
         }
 
 
