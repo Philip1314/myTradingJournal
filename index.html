@@ -42,6 +42,15 @@
              max-height: 300px; /* Adjust as needed */
              margin-top: 1.5rem; /* Add some space above the chart */
         }
+
+        /* *** ADDED FOR MOBILE SCROLL PERFORMANCE *** */
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS Safari */
+            transform: translateZ(0); /* Promote hardware acceleration */
+            /* Alternatively, you could use: will-change: transform, scroll-position; */
+        }
+        /* ***************************************** */
+
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -104,21 +113,23 @@
 
             <p class="text-sm text-gray-500 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
             <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
-                <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coin Name</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confluences</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chart Link</th>
-                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
-                    </thead>
-                    <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
-                        </tbody>
-                </table>
+                 <div style="-webkit-overflow-scrolling: touch; transform: translateZ(0);">
+                    <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coin Name</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confluences</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chart Link</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
+                        </thead>
+                        <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                    </table>
+                 </div>
             </div>
             <p id="noResultsMessage" class="hidden text-center py-4 text-gray-500">No trades found matching your criteria.</p>
         </section>
@@ -481,7 +492,7 @@
 
                 const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
                 const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
-                // Simple string includes check for date, assumes YYYY-MM-DD or similar format
+                // Simple string includes check for date, assumesYYYY-MM-DD or similar format
                 const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
 
                 return coinMatch && confluencesMatch && dateMatch;
