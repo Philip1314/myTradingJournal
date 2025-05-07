@@ -130,9 +130,9 @@
                 border-bottom: 1px solid #4a5568; /* Separator between key-value pairs */
                 margin-bottom: 0.5rem;
                 padding: 0.5rem 0; /* Adjust padding */
-                text-align: right; /* Align value to the right */
+                text-align: left; /* Changed from right to left */
                 position: relative; /* Needed for absolute positioning of ::before */
-                padding-left: 50%; /* Make space for the label */
+                padding-left: 50%; /* Keep space for the label */
                 white-space: normal; /* Allow text to wrap */
                  overflow-wrap: break-word; /* Break long words */
                  word-wrap: break-word;
@@ -145,7 +145,7 @@
                 width: 45%; /* Adjust width as needed */
                 padding-left: 0.75rem; /* Match card padding */
                 font-weight: bold; /* Make the label bold */
-                text-align: left; /* Align label to the left */
+                text-align: left; /* Keep label aligned to the left */
                 color: #a0aec0; /* Tailwind gray-500 - Header text color */
                  white-space: nowrap; /* Prevent label from wrapping */
                  overflow: hidden;
@@ -939,7 +939,7 @@
 
          // Keyword inputs do not trigger auto-filtering, requires Apply button click
          // coinFilterInput.addEventListener('input', applyFilters); // Optional: uncomment for live filtering
-         // confluencesFilterInput.addEventListener('input', apply Filters); // Optional: uncomment for live filtering
+         // confluencesFilterInput.addEventListener('input', applyFilters); // Optional: uncomment for live filtering
 
 
     </script>
