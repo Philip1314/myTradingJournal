@@ -186,8 +186,8 @@
 
             <div class="mb-6">
                  <div class="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                     <p id="winRatePercentText" class="text-white">- Win %</p>
-                     <p id="lossRatePercentText" class="text-white">- Loss %</p>
+                     <p id="winRatePercentText" class="text-green-500">- Win %</p>
+                     <p id="lossRatePercentText" class="text-red-600">- Loss %</p>
                  </div>
                  <div id="winLossBarContainer" class="w-full flex rounded-md overflow-hidden" style="height: 20px;">
                      <div id="winBar" class="bg-green-500" style="width: 0%;"></div>
@@ -801,8 +801,8 @@
               if (lossRatePercentText) lossRatePercentText.textContent = metrics.lossRatePercentText;
 
               // Ensure text color is visible against background color (optional)
-              if (winRatePercentText) winRatePercentText.classList.toggle('text-gray-800', metrics.winBarWidthPercent > 50 && metrics.winBarWidthPercent < 90); // Example adjustment
-              if (lossRatePercentText) lossRatePercentText.classList.toggle('text-gray-800', metrics.lossBarWidthPercent > 50 && metrics.lossBarWidthPercent < 90); // Example adjustment
+              if (winRatePercentText) winRatePercentText.classList.toggle('text-green-500', metrics.winBarWidthPercent > 50 && metrics.winBarWidthPercent < 90); // Example adjustment
+              if (lossRatePercentText) lossRatePercentText.classList.toggle('text-red-600', metrics.lossBarWidthPercent > 50 && metrics.lossBarWidthPercent < 90); // Example adjustment
          }
 
 
