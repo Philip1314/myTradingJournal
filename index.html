@@ -267,6 +267,7 @@
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Position</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[150px]">Confluences</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Time Frame</th>
@@ -332,6 +333,7 @@
         const tableHeaders = {
             date: 'Date',
             coinName: 'Coin Name',
+            position: 'Position', // Added Position header
             result: 'Result',
             confluences: 'Confluences',
             timeFrame: 'Time Frame',
@@ -406,6 +408,7 @@
                 timestamp: ['timestamp'], // Timestamp from the form submission
                 tradeDate: ['date', 'trade date'], // Manual Date input from form
                 coinName: ['coin name', 'coin'],
+                position: ['position'], // Added mapping for Position
                 result: ['result', 'outcome'],
                 confluences: ['confluences'],
                 timeFrame: ['time frame', 'timeframe', 'tf'],
@@ -432,6 +435,7 @@
             const timestampIdx = findHeaderIndex(columnMappings.timestamp);
             const dateIdx = findHeaderIndex(columnMappings.tradeDate);
             const coinNameIdx = findHeaderIndex(columnMappings.coinName);
+            const positionIdx = findHeaderIndex(columnMappings.position); // Found Position Index
             const resultIdx = findHeaderIndex(columnMappings.result);
             const confluencesIdx = findHeaderIndex(columnMappings.confluences);
             const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
@@ -442,6 +446,7 @@
                  timestamp: timestampIdx,
                  date: dateIdx,
                  coinName: coinNameIdx,
+                 position: positionIdx, // Log Position Index
                  result: resultIdx,
                  confluences: confluencesIdx,
                  timeFrame: timeFrameIdx,
@@ -450,7 +455,7 @@
              });
 
 
-             // Check for essential columns
+             // Check for essential columns (Position is not strictly essential for basic display/filtering)
              if (dateIdx === -1 && timestampIdx === -1) {
                  showError("Essential 'Date' or 'Timestamp' column not found in CSV headers. Please check your Google Sheet columns.");
                  return [];
@@ -507,6 +512,7 @@
                     // Prefer manual date if available, otherwise use timestamp date part
                     date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : ''),
                     coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
+                    position: positionIdx !== -1 && values[positionIdx] ? values[positionIdx].trim() : 'N/A', // Extracted Position
                     result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
                     confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
                     timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
@@ -694,10 +700,15 @@
              const finalFilteredTrades = filteredTrades.filter(trade => {
                  const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
                  const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
+                 const tradePosition = trade.position ? trade.position.toLowerCase() : ''; // Include position in filter check (optional)
+
 
                  const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
                  const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+                 // const positionMatch = positionQuery === '' || tradePosition.includes(positionQuery); // Example if you add a position filter input
 
+
+                 // return coinMatch && confluencesMatch && positionMatch; // Update if position filter is added
                  return coinMatch && confluencesMatch;
              });
 
@@ -822,7 +833,23 @@
                 coinCell.textContent = trade.coinName;
                 row.appendChild(coinCell);
 
-                // Result Cell - Add color based on result
+                // Position Cell - Added this cell
+                const positionCell = document.createElement('td');
+                positionCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-semibold');
+                positionCell.setAttribute('data-label', tableHeaders.position); // Add data-label
+                const positionText = trade.position.toLowerCase();
+                if (positionText === 'long') {
+                     positionCell.classList.add('text-green-500');
+                } else if (positionText === 'short') {
+                     positionCell.classList.add('text-red-500');
+                } else {
+                    positionCell.classList.add('text-gray-400'); // Default color for N/A or other values
+                }
+                positionCell.textContent = trade.position;
+                row.appendChild(positionCell);
+
+
+                // Result Cell - Add color based on result (This was already here)
                 const resultCell = document.createElement('td');
                 resultCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-semibold');
                 resultCell.setAttribute('data-label', tableHeaders.result); // Add data-label
