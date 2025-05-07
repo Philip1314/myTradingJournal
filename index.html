@@ -458,10 +458,7 @@
                 // Date Parsing: Try to create a valid Date object for filtering
                 let tradeDateObj = null;
                 if (trade.date && trade.date !== 'N/A') {
-                    // Attempt to parse MM/DD/YYYY or
-```html
-(\d{4})-(\d{1,2})-(\d{1,2})$/); //```html
-MM/DD/YYYY or YYYY-MM-DD
+                    // Attempt to parse MM/DD/YYYY or YYYY-MM-DD or similar
                     const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
                     const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); // YYYY-MM-DD
 
@@ -525,7 +522,7 @@ MM/DD/YYYY or YYYY-MM-DD
              const year = date.getFullYear();
              const month = ('0' + (date.getMonth() + 1)).slice(-2); // Months are 0-indexed
              const day = ('0' + date.getDate()).slice(-2);
-             return `<span class="math-inline">\{year\}\-</span>{month}-${day}`;
+             return `${year}-${month}-${day}`;
          }
 
 
@@ -639,7 +636,7 @@ MM/DD/YYYY or YYYY-MM-DD
                 return;
             } else {
                 noResultsMessage.style.display = 'none';
-                 paginationControls.style.display = 'flex'; // Show pagination if there are filtered trades
+                 // paginationControls.style.display = 'flex'; // Keep this update in updatePaginationControls
             }
 
              if (tradesToDisplay.length === 0 && filteredTrades.length > 0) {
@@ -647,14 +644,17 @@ MM/DD/YYYY or YYYY-MM-DD
                   // Should ideally not happen if pagination controls are correctly managed,
                   // but as a fallback, go back to the last valid page.
                   const totalPages = Math.ceil(filteredTrades.length / ITEMS_PER_PAGE);
-                  if (currentPage > totalPages) {
-                       currentPage = totalPages > 0 ? totalPages : 1; // Go to last page or page 1 if no pages
+                  if (currentPage > totalPages && totalPages > 0) { // Only navigate if there's a valid previous page
+                       currentPage = totalPages;
                        console.warn(`Page ${currentPage + 1} is empty, redirecting to page ${currentPage}.`);
                        displayCurrentPage(); // Recurse to display the correct page
                        return; // Exit current call
                   }
-                  // If tradesToDisplay is 0 but filteredTrades > 0 and we are on a valid page, something is wrong with slice
-                  console.error("Pagination slice returned 0 trades unexpectedly.", {currentPage, startIndex, endIndex, filteredTradesLength: filteredTrades.length});
+                   if (filteredTrades.length > 0) {
+                        // If we are here, filteredTrades > 0 but tradesToDisplay === 0 on a valid page number.
+                        // This is unexpected slice behavior or currentPage is somehow invalid despite checks.
+                       console.error("Pagination slice returned 0 trades unexpectedly.", {currentPage, startIndex, endIndex, filteredTradesLength: filteredTrades.length});
+                   }
                   noResultsMessage.style.display = 'block'; // Show message as no trades for this page
                   return; // Exit if no trades to display on this page
              }
@@ -924,17 +924,17 @@ MM/DD/YYYY or YYYY-MM-DD
                                       (trade.result.toLowerCase() === 'loss' || trade.result.toLowerCase().includes('loss') ? 'text-red-500' : 'text-yellow-500'); // Added yellow for BE
 
                   const chartLinkHtml = trade.chartLink && trade.chartLink !== 'N/A' && trade.chartLink.startsWith('http')
-                                        ? `<a href="${trade.chartLink}" target="_blank" rel="noopener noreferrer">View Chart</a>`
+                                        ? `<a href="${escapeHtmlAttribute(trade.chartLink)}" target="_blank" rel="noopener noreferrer">View Chart</a>` // Escape URL for attribute
                                         : 'N/A';
 
 
                  htmlContent += `
                      <tr>
-                         <td><span class="math-inline">\{trade\.displayDate \|\| trade\.date \|\| 'N/A'\}</td\>
-<td\></span>{escapeHtml(trade.coinName)}</td>
-                         <td class="<span class="math-inline">\{resultClass\}"\></span>{escapeHtml(trade.result)}</td>
-                         <td style="white-space: normal;"><span class="math-inline">\{escapeHtml\(trade\.confluences\)\}</td\>
-<td\></span>{escapeHtml(trade.timeFrame)}</td>
+                         <td>${escapeHtml(trade.displayDate || trade.date || 'N/A')}</td>
+                         <td>${escapeHtml(trade.coinName)}</td>
+                         <td class="${resultClass}">${escapeHtml(trade.result)}</td>
+                         <td style="white-space: normal;">${escapeHtml(trade.confluences)}</td>
+                         <td>${escapeHtml(trade.timeFrame)}</td>
                          <td>${chartLinkHtml}</td>
                      </tr>
                  `;
@@ -957,12 +957,21 @@ MM/DD/YYYY or YYYY-MM-DD
              }
         }
 
-         // Helper function to escape HTML entities in generated content
+         // Helper function to escape HTML entities in generated content (including backticks)
          function escapeHtml(unsafe) {
              return unsafe
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
                  .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;")
+                 .replace(/`/g, "&#96;"); // Escape backticks
+         }
+
+         // Helper function to escape characters that can break HTML attributes (like quotes)
+         function escapeHtmlAttribute(unsafe) {
+             // Primarily escapes quotes which are common in href or src attributes
+             return unsafe
                  .replace(/"/g, "&quot;")
                  .replace(/'/g, "&#039;");
          }
