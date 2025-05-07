@@ -524,14 +524,19 @@
                 // Date Parsing: Try to create a valid Date object for filtering
                 let tradeDateObj = null;
                 if (trade.date && trade.date !== 'N/A') {
-                    // Attempt to parse MM/DD/YYYY orYYYY-MM-DD or similar
-                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
+                    // Attempt to parse DD/MM/YYYY, MM/DD/YYYY or YYYY-MM-DD
+                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // Matches DD/MM/YYYY or MM/DD/YYYY
                     const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); //YYYY-MM-DD
 
                     if (datePartsSlash) {
+                         // Assuming DD/MM/YYYY format based on user feedback
                          // Month is 0-indexed in JS Date: new Date(year, monthIndex, day)
-                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[1] - 1, datePartsSlash[2]);
+                         // datePartsSlash[1] is Day, datePartsSlash[2] is Month, datePartsSlash[3] is Year
+                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[2] - 1, datePartsSlash[1]);
+                         // Optional: Add a check here if the datePartsSlash[1] (day) is > 12,
+                         // it's more likely MM/DD/YYYY, but sticking to user's DD/MM/YYYY for now.
                     } else if (datePartsDash) {
+                         // YYYY-MM-DD format (existing logic)
                          tradeDateObj = new Date(datePartsDash[1], datePartsDash[2] - 1, datePartsDash[3]);
                     } else {
                         // Fallback: Try general Date constructor - less reliable
@@ -556,7 +561,7 @@
                      trade.dateObject = tradeDateObj; // Store date object for filtering
                       // Format date for display (optional, but good practice)
                      if (trade.dateObject) {
-                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) ifYYYY-MM-DD preferred
+                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) if YYYY-MM-DD preferred
                      } else {
                          trade.displayDate = trade.date; // Use original string if dateObject is null (e.g., no date column in sheet)
                      }
@@ -582,7 +587,7 @@
             return trades;
         }
 
-         // Helper function to format a Date object asYYYY-MM-DD for input values
+         // Helper function to format a Date object as YYYY-MM-DD for input values
          function formatDateForInput(date) {
              if (!date || isNaN(date.getTime())) return '';
              const year = date.getFullYear();
@@ -840,10 +845,13 @@
                 const positionText = trade.position.toLowerCase();
                 if (positionText === 'long') {
                      positionCell.classList.add('text-green-500');
+                     positionCell.classList.remove('text-red-500', 'text-gray-400'); // Remove other potential colors
                 } else if (positionText === 'short') {
                      positionCell.classList.add('text-red-500');
+                     positionCell.classList.remove('text-green-500', 'text-gray-400'); // Remove other potential colors
                 } else {
                     positionCell.classList.add('text-gray-400'); // Default color for N/A or other values
+                     positionCell.classList.remove('text-green-500', 'text-red-500'); // Remove other potential colors
                 }
                 positionCell.textContent = trade.position;
                 row.appendChild(positionCell);
@@ -856,10 +864,13 @@
                 const resultText = trade.result.toLowerCase();
                 if (resultText === 'win' || resultText.includes('profit')) {
                     resultCell.classList.add('text-green-500');
+                     resultCell.classList.remove('text-red-500', 'text-yellow-500'); // Remove other potential colors
                 } else if (resultText === 'loss' || resultText.includes('loss')) {
                     resultCell.classList.add('text-red-500');
+                     resultCell.classList.remove('text-green-500', 'text-yellow-500'); // Remove other potential colors
                 } else {
                      resultCell.classList.add('text-yellow-500'); // For Break Even or other results
+                     resultCell.classList.remove('text-green-500', 'text-red-500'); // Remove other potential colors
                  }
                 resultCell.textContent = trade.result;
                 row.appendChild(resultCell);
