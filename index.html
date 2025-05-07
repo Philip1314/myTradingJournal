@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Trading Dashboard</title>
+    <title>My Trading Journal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
@@ -93,16 +93,11 @@
             border-color: #4a5568; /* Tailwind gray-700 */
          }
 
-         /* Chart.js tooltip dark mode compatibility */
-         /* Default Chart.js tooltips might need overriding if not styled by Chart.js itself */
-
-
         /* Filter button active state */
         .filter-button.active {
             background-color: #4c51bf; /* Darker indigo */
             border-color: #434190;
         }
-
 
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -118,8 +113,11 @@
                Log a New Trade
             </a>
         </div>
-        <section id="trading-analysis" class="mb-10 p-6 rounded-lg shadow-lg dark-card"> <div class="flex justify-between items-center mb-4">
-                 <h2 class="text-2xl font-semibold text-gray-200">Performance Summary</h2> <div class="flex flex-wrap gap-2">
+
+        <section id="trading-analysis" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-semibold text-gray-200">Performance Summary</h2>
+                 <div class="flex flex-wrap gap-2">
                       <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 active" data-time-period="all">All</button>
                       <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="90d">Last 90 days</button>
                       <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="30d">Last 30 days</button>
@@ -128,17 +126,26 @@
             </div>
 
             <div id="analysisMetrics" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-800 p-4 rounded-md text-center"> <p class="text-sm font-medium text-gray-400">Total Trades</p>
+                <div class="bg-gray-800 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-gray-400">Total Trades</p>
                     <p id="totalTrades" class="text-xl font-bold text-gray-200">-</p>
                 </div>
                  <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-green-500">Wins</p> <p id="totalWins" class="text-xl font-bold text-green-400">-</p> </div>
+                    <p class="text-sm font-medium text-green-500">Wins</p>
+                    <p id="totalWins" class="text-xl font-bold text-green-400">-</p>
+                </div>
                  <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-red-500">Losses</p> <p id="totalLosses" class="text-xl font-bold text-red-400">-</p> </div>
+                    <p class="text-sm font-medium text-red-500">Losses</p>
+                    <p id="totalLosses" class="text-xl font-bold text-red-400">-</p>
+                </div>
                  <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-yellow-500">Break Evens</p> <p id="totalBreakEvens" class="text-xl font-bold text-yellow-400">-</p> </div>
+                    <p class="text-sm font-medium text-yellow-500">Break Evens</p>
+                    <p id="totalBreakEvens" class="text-xl font-bold text-yellow-400">-</p>
+                </div>
                 <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-indigo-500">Win Rate</p> <p id="winRate" class="text-xl font-bold text-indigo-400">-</p> </div>
+                    <p class="text-sm font-medium text-indigo-500">Win Rate</p>
+                    <p id="winRate" class="text-xl font-bold text-indigo-400">-</p>
+                </div>
             </div>
 
             <div class="chart-container">
@@ -147,15 +154,34 @@
 
         </section>
 
-        <section id="trading-performance" class="mb-10 p-6 rounded-lg shadow-lg dark-card"> <h2 class="text-2xl font-semibold mb-6 text-gray-200">Trading Journal Data</h2> <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 rounded-md dark-filter-bg"> <div>
-                    <label for="coinFilter" class="block text-sm font-medium text-gray-300 mb-1">Coin Name:</label> <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
-                <div>
-                    <label for="confluencesFilter" class="block text-sm font-medium text-gray-300 mb-1">Confluences:</label> <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
-                <div>
-                    <label for="dateFilter" class="block text-sm font-medium text-gray-300 mb-1">Date:</label> <input type="text" id="dateFilter" placeholder="e.g., 2023-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input"> </div>
-                <button id="applyFiltersBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button> <button id="resetFiltersBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button> </div>
+        <section id="trading-performance" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-200">Trading Journal Data</h2>
 
-            <div id="loadingMessage" class="text-center py-4 text-gray-400">Loading trading data...</div> <div id="errorMessage" class="hidden text-center py-4 text-red-400 bg-red-900 border border-red-700 rounded-md"></div> <p class="text-sm text-gray-400 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p> <div class="overflow-x-auto rounded-lg shadow border border-gray-700 overflow-x-container"> <table id="tradesTable" class="min-w-full divide-y dark-divide-gray-200 table-fixed-layout"> <thead class="dark-table-header"> <tr>
+            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 rounded-md dark-filter-bg">
+                <div>
+                    <label for="coinFilter" class="block text-sm font-medium text-gray-300 mb-1">Coin Name:</label>
+                    <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                </div>
+                <div>
+                    <label for="confluencesFilter" class="block text-sm font-medium text-gray-300 mb-1">Confluences:</label>
+                    <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                </div>
+                <div>
+                    <label for="dateFilter" class="block text-sm font-medium text-gray-300 mb-1">Date:</label>
+                    <input type="text" id="dateFilter" placeholder="e.g., YYYY-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                </div>
+                <button id="applyFiltersBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
+                <button id="resetFiltersBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button>
+            </div>
+
+            <div id="loadingMessage" class="text-center py-4 text-gray-400">Loading trading data...</div>
+            <div id="errorMessage" class="hidden text-center py-4 text-red-400 bg-red-900 border border-red-700 rounded-md"></div>
+
+            <p class="text-sm text-gray-400 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
+            <div class="overflow-x-auto rounded-lg shadow border border-gray-700 overflow-x-container">
+                <table id="tradesTable" class="min-w-full divide-y dark-divide-gray-200 table-fixed-layout">
+                    <thead class="dark-table-header">
+                        <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
@@ -170,19 +196,20 @@
                         </tbody>
                 </table>
             </div>
-            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p> </section>
+            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p>
+        </section>
 
-        </div>
+    </div>
 
-    <footer class="text-center py-8 mt-10 text-sm text-gray-500"> <p>Trading data powered by Google Sheets.</p>
+    <footer class="text-center py-8 mt-10 text-sm text-gray-500">
+        <p>Trading data powered by Google Sheets.</p>
     </footer>
 
     <script>
         // --- CONFIGURATION ---
-        // IMPORTANT: Replace with your Google Sheet's CSV URL (File > Share > Publish to web > Select sheet & CSV > Copy URL)
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=752099388&single=true&output=csv';
-        // Google Form URL for the button
-        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header';
+        // Google Form URL for the button (already in HTML href)
+        // const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header';
 
 
         // --- DOM ELEMENTS ---
@@ -198,25 +225,25 @@
         const applyFiltersBtn = document.getElementById('applyFiltersBtn');
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-        // Analysis elements (Simplified)
+        // Analysis elements
         const totalTradesElement = document.getElementById('totalTrades');
         const totalWinsElement = document.getElementById('totalWins');
         const totalLossesElement = document.getElementById('totalLosses');
-        const totalBreakEvensElement = document.getElementById('totalBreakEvens'); // Element for BE
+        const totalBreakEvensElement = document.getElementById('totalBreakEvens');
         const winRateElement = document.getElementById('winRate');
 
         const performanceChartCanvas = document.getElementById('performanceChart');
-        const timePeriodButtons = document.querySelectorAll('.filter-button'); // Time period buttons
+        const timePeriodButtons = document.querySelectorAll('.filter-button');
 
-        let allTrades = []; // To store all fetched trades
-        let currentTimePeriod = 'all'; // Default time period
+        let allTrades = [];
+        let currentTimePeriod = 'all';
 
         // --- DATA FETCHING AND PARSING ---
         async function fetchTrades() {
             loadingMessage.style.display = 'block';
             errorMessage.style.display = 'none';
             noResultsMessage.style.display = 'none';
-            tableBody.innerHTML = ''; // Clear existing table data
+            tableBody.innerHTML = '';
 
             if (GOOGLE_SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE') || !GOOGLE_SHEET_CSV_URL) {
                 showError('Error: Google Sheet CSV URL is not configured. Please update the GOOGLE_SHEET_CSV_URL variable in the script.');
@@ -235,12 +262,10 @@
                 allTrades = parseCSV(csvData);
 
                 if (allTrades.length === 0 && csvData.trim() !== "" && !csvData.toLowerCase().includes("error")) {
-                     console.warn("CSV data was fetched but resulted in zero trades. CSV content:", csvData.substring(0, 500) + '...');
+                     console.warn("CSV data was fetched but resulted in zero trades."); // Reduced logging
                 }
 
-                // Apply initial time period filter and update analysis/table
                 applyTimePeriodFilter(currentTimePeriod);
-
 
             } catch (error) {
                 console.error('Failed to fetch or parse trades:', error);
@@ -260,9 +285,8 @@
             const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
             const trades = [];
 
-            // Column name mapping to match your headers (case-insensitive matching)
             const columnMappings = {
-                timestamp: ['timestamp'], // Google Form timestamp
+                timestamp: ['timestamp'],
                 tradeDate: ['date', 'trade date'],
                 coinName: ['coin name', 'coin'],
                 result: ['result', 'outcome'],
@@ -283,10 +307,9 @@
                           return index;
                      }
                  }
-                return -1; // Header not found
+                return -1;
             }
 
-            // Get indices for each column
             const timestampIdx = findHeaderIndex(columnMappings.timestamp);
             const dateIdx = findHeaderIndex(columnMappings.tradeDate);
             const coinNameIdx = findHeaderIndex(columnMappings.coinName);
@@ -314,9 +337,9 @@
                       continue;
                  }
 
-                 const maxIndex = Math.max(timestampIdx, dateIdx, coinNameIdx, resultIdx, confluencesIdx, timeFrameIdx, remarksIdx, chartLinkIdx);
+                const maxIndex = Math.max(timestampIdx, dateIdx, coinNameIdx, resultIdx, confluencesIdx, timeFrameIdx, remarksIdx, chartLinkIdx);
                  if (maxIndex !== -1 && values.length < maxIndex + 1) {
-                     console.warn(`Skipping line ${i+1} due to insufficient columns:`, lines[i]);
+                     console.warn(`Skipping line ${i+1} due to insufficient columns.`); // Reduced logging
                      continue;
                  }
 
@@ -334,19 +357,40 @@
 
                 let tradeDateObj = null;
                 if (trade.timestamp) {
-                    tradeDateObj = new Date(trade.timestamp);
+                    // Try parsing Google Form timestamp format (e.g., '5/7/2025 2:16:58')
+                    const parts = trade.timestamp.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/);
+                    if (parts) {
+                         // Note: Month is 0-indexed in JS Date
+                        tradeDateObj = new Date(parts[3], parts[1] - 1, parts[2], parts[4], parts[5], parts[6]);
+                    } else {
+                        // Fallback to general Date constructor for other timestamp formats
+                         tradeDateObj = new Date(trade.timestamp);
+                    }
                 } else if (trade.date && trade.date !== 'N/A') {
-                    tradeDateObj = new Date(trade.date);
+                    // Try parsing date string (YYYY-MM-DD or MM/DD/YYYY)
+                     const dateParts = trade.date.match(/(\d{4})-(\d{2})-(\d{2})/); // YYYY-MM-DD
+                     if (dateParts) {
+                          tradeDateObj = new Date(dateParts[1], dateParts[2] - 1, dateParts[3]);
+                     } else {
+                          const datePartsSlash = trade.date.match(/(\d+)\/(\d+)\/(\d{4})/); // MM/DD/YYYY
+                           if(datePartsSlash) {
+                                tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[1] - 1, datePartsSlash[2]);
+                           } else {
+                                // Last resort, try general Date constructor for date string
+                                tradeDateObj = new Date(trade.date);
+                           }
+                     }
                 }
 
+
                  if(trade.date !== 'N/A' && trade.coinName !== 'N/A' && trade.result !== 'N/A' && tradeDateObj && !isNaN(tradeDateObj.getTime())) {
-                    trade.dateObject = tradeDateObj; // Store date object for filtering
+                    trade.dateObject = tradeDateObj;
                     trades.push(trade);
                  } else {
                      console.warn("Skipping trade due to missing essential data or invalid date:", trade);
                  }
             }
-             trades.sort((a, b) => a.dateObject - b.dateObject); // Sort ascending for consistent filtering
+             trades.sort((a, b) => a.dateObject - b.dateObject);
 
             return trades;
         }
@@ -374,7 +418,9 @@
                      return false;
                  }
                  const tradeDate = new Date(trade.dateObject.getFullYear(), trade.dateObject.getMonth(), trade.dateObject.getDate());
-                 const filterStartDate = startDate ? new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth(), new Date(startDate).getDate()) : null;
+                 // Normalize the start date to the beginning of the day for comparison
+                 const filterStartDate = startDate ? new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) : null;
+
 
                  return tradeDate && (filterStartDate ? tradeDate >= filterStartDate : true);
 
@@ -393,7 +439,7 @@
                  }
              });
 
-             applyFilters(timeFilteredTrades); // Pass the time-filtered list to apply keyword filters
+             applyFilters(timeFilteredTrades);
         }
 
 
@@ -422,7 +468,7 @@
             coinFilterInput.value = '';
             confluencesFilterInput.value = '';
             dateFilterInput.value = '';
-            applyTimePeriodFilter(currentTimePeriod); // Re-apply filters based on the current time period
+            applyTimePeriodFilter(currentTimePeriod);
         }
 
         // --- ANALYSIS LOGIC ---
@@ -464,11 +510,18 @@
 
 
         function renderChart(metrics) {
-            if (performanceChart) {
+            // Destroy existing chart if it exists AND has a destroy function
+            if (performanceChart && typeof performanceChart.destroy === 'function') {
                 performanceChart.destroy();
             }
 
             const ctx = performanceChartCanvas.getContext('2d');
+
+            // IMPORTANT: Check if context is available before creating the chart
+            if (!ctx) {
+                console.error('Failed to get 2D context for chart canvas. Chart cannot be rendered.');
+                return;
+            }
 
             performanceChart = new Chart(ctx, {
                 type: 'bar',
@@ -480,12 +533,12 @@
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.6)',
                             'rgba(255, 99, 132, 0.6)',
-                            'rgba(255, 205, 86, 0.6)'
+                            'rgba(255, 205, 86, 0.6)' // Used 205, 86 for yellow
                         ],
                         borderColor: [
                              'rgba(75, 192, 192, 1)',
                             'rgba(255, 99, 132, 1)',
-                            'rgba(255, 255, 86, 1)' /* Adjusted for better visibility on dark bg */
+                            'rgba(255, 205, 86, 1)' // Used 205, 86 for yellow
                         ],
                         borderWidth: 1
                     }]
@@ -495,9 +548,7 @@
                      maintainAspectRatio: false,
                     scales: {
                         x: {
-                            ticks: {
-                                font: { color: '#a0aec0' }
-                            },
+                            ticks: { font: { color: '#a0aec0' } },
                             grid: { color: '#4a5568' }
                         },
                         y: {
@@ -596,14 +647,14 @@
             const period = currentTimePeriod;
             const now = new Date();
             let startDate = null;
-             if (period === '7d') startDate = new Date(now).setDate(now.getDate() - 7);
-             else if (period === '30d') startDate = new Date(now).setDate(now.getDate() - 30);
-             else if (period === '90d') startDate = new Date(now).setDate(now.getDate() - 90);
+             if (period === '7d') { startDate = new Date(now); startDate.setDate(now.getDate() - 7); }
+             else if (period === '30d') { startDate = new Date(now); startDate.setDate(now.getDate() - 30); }
+             else if (period === '90d') { startDate = new Date(now); startDate.setDate(now.getDate() - 90); }
 
              const timeFilteredTrades = allTrades.filter(trade => {
                  if (!trade.dateObject) return false;
                  const tradeDate = new Date(trade.dateObject.getFullYear(), trade.dateObject.getMonth(), trade.dateObject.getDate());
-                 const filterStartDate = startDate ? new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth(), new Date(startDate).getMinutes()) : null; // Use getMinutes as a proxy for start of day to avoid timezone issues with setHours(0,0,0,0)
+                 const filterStartDate = startDate ? new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) : null;
 
                  return tradeDate && (filterStartDate ? tradeDate >= filterStartDate : true);
              });
