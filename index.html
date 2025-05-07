@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trading Journal & Performance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better aesthetics (optional) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        body {
+            font-family: 'Inter', sans-serif; /* Default Tailwind font, good for readability */
+        }
+        /* Ensure table layout is fixed to prevent column width issues with long content */
+        .table-fixed-layout {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .table-fixed-layout th, .table-fixed-layout td {
+            overflow-wrap: break-word; /* Break long words */
+            word-wrap: break-word; /* Older browsers */
+            hyphens: auto; /* Enable hyphenation */
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Trading Journal & Performance</h1>
+        </header>
+
+        <section id="trading-journal-form" class="mb-10 p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Log a New Trade</h2>
+            <p class="mb-4 text-gray-600">
+                Use the embedded Google Form below to log your new trades. The data will automatically appear in the performance table after a short delay.
+                You might need to refresh the page to see the latest entries.
+            </p>
+            <div class="w-full h-[450px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-md border border-gray-200">
+                 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" class="rounded-md">Loading…</iframe>
+            </div>
+        </section>
+
+        <section id="trading-performance" class="p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Performance</h2>
+
+            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
+                <div>
+                    <label for="coinFilter" class="block text-sm font-medium text-gray-700 mb-1">Coin Name:</label>
+                    <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="confluencesFilter" class="block text-sm font-medium text-gray-700 mb-1">Confluences:</label>
+                    <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
+                    <input type="text" id="dateFilter" placeholder="e.g., YYYY-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <button id="applyFiltersBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
+                <button id="resetFiltersBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button>
+            </div>
+
+            <div id="loadingMessage" class="text-center py-4 text-gray-600">Loading trading data...</div>
+            <div id="errorMessage" class="hidden text-center py-4 text-red-600 bg-red-100 border border-red-400 rounded-md"></div>
+
+            <p class="text-sm text-gray-500 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
+            <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
+                <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confluences</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chart Link</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
+                    </thead>
+                    <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-500">No trades found matching your criteria.</p>
+        </section>
+    </div>
+
+    <footer class="text-center py-8 mt-10 text-sm text-gray-500">
+        <p>Trading Journal hosted on GitHub Pages. Data from Google Sheets.</p>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION ---
+        // IMPORTANT: Replace with your Google Sheet's CSV URL (File > Share > Publish to web > Select sheet & CSV > Copy URL)
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=752099388&single=true&output=csv';
+
+        // --- DOM ELEMENTS ---
+        const tableBody = document.getElementById('tradesTableBody');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        // Updated filter input IDs
+        const coinFilterInput = document.getElementById('coinFilter');
+        const confluencesFilterInput = document.getElementById('confluencesFilter');
+        const dateFilterInput = document.getElementById('dateFilter');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+        let allTrades = []; // To store all fetched trades for client-side filtering
+
+        // --- DATA FETCHING AND PARSING ---
+        async function fetchTrades() {
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            noResultsMessage.style.display = 'none';
+            tableBody.innerHTML = ''; // Clear existing table data
+
+            if (GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE' || !GOOGLE_SHEET_CSV_URL) {
+                showError('Error: Google Sheet CSV URL is not configured. Please update the GOOGLE_SHEET_CSV_URL variable in the script.');
+                loadingMessage.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&timestamp=${new Date().getTime()}`);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
+                const csvData = await response.text();
+                allTrades = parseCSV(csvData);
+                if (allTrades.length === 0 && csvData.trim() !== "" && !csvData.toLowerCase().includes("error")) {
+                     console.warn("CSV data was fetched but resulted in zero trades. CSV content:", csvData);
+                }
+                renderTable(allTrades);
+            } catch (error) {
+                console.error('Failed to fetch or parse trades:', error);
+                showError(`Failed to load trades. Check the CSV URL and sheet permissions. Error: ${error.message}`);
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split(/\r?\n/);
+            if (lines.length < 2) {
+                console.log("CSV has no data rows.");
+                return [];
+            }
+
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+            const trades = [];
+
+            // UPDATED Column name mapping to match your headers
+            const columnMappings = {
+                timestamp: ['timestamp'],
+                tradeDate: ['date'], // Specifically for the 'Date' column you provided
+                coinName: ['coin name'],
+                result: ['result'],
+                confluences: ['confluences'],
+                timeFrame: ['time frame'],
+                remarks: ['remarks'],
+                chartLink: ['chart link']
+            };
+
+            function findHeaderIndex(headerNames) {
+                for (const name of headerNames) {
+                    const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+                    if (index !== -1) return index;
+                }
+                // Fallback for partial match if exact fails (less critical if names are exact)
+                for (const name of headerNames) {
+                    const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+                    if (index !== -1) {
+                        console.warn(`Partial match for header: '${name}' found as '${headers[index]}'. Exact match preferred.`);
+                        return index;
+                    }
+                }
+                return -1;
+            }
+
+            // Get indices for each of your specified columns
+            const timestampIdx = findHeaderIndex(columnMappings.timestamp);
+            const dateIdx = findHeaderIndex(columnMappings.tradeDate);
+            const coinNameIdx = findHeaderIndex(columnMappings.coinName);
+            const resultIdx = findHeaderIndex(columnMappings.result);
+            const confluencesIdx = findHeaderIndex(columnMappings.confluences);
+            const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
+            const remarksIdx = findHeaderIndex(columnMappings.remarks);
+            const chartLinkIdx = findHeaderIndex(columnMappings.chartLink);
+
+            // For debugging: Log which columns were found
+            // console.log("Header indices found:", { timestampIdx, dateIdx, coinNameIdx, resultIdx, confluencesIdx, timeFrameIdx, remarksIdx, chartLinkIdx });
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+
+                const values = [];
+                let currentVal = '';
+                let inQuotes = false;
+                for (let char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentVal.trim().replace(/^"|"$/g, ''));
+                        currentVal = '';
+                    } else {
+                        currentVal += char;
+                    }
+                }
+                values.push(currentVal.trim().replace(/^"|"$/g, ''));
+
+                // UPDATED trade object creation based on your headers
+                const trade = {
+                    timestamp: timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx] : 'N/A',
+                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : 'N/A'), // Use 'Date' column, fallback to Timestamp's date part
+                    coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
+                    result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx] : 'N/A',
+                    confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
+                    timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
+                    remarks: remarksIdx !== -1 && values[remarksIdx] ? values[remarksIdx] : 'N/A',
+                    chartLink: chartLinkIdx !== -1 && values[chartLinkIdx] ? values[chartLinkIdx] : 'N/A',
+                };
+                trades.push(trade);
+            }
+            return trades;
+        }
+
+        // --- RENDERING ---
+        function renderTable(tradesToRender) {
+            tableBody.innerHTML = '';
+            noResultsMessage.style.display = 'none';
+
+            if (tradesToRender.length === 0) {
+                noResultsMessage.style.display = 'block';
+                return;
+            }
+
+            tradesToRender.forEach(trade => {
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-50 transition-colors duration-150';
+
+                // UPDATED: Order of cells must match the new table headers in HTML
+                insertCell(row, trade.date);
+                insertCell(row, trade.coinName);
+                insertCell(row, trade.result);
+                insertCell(row, trade.confluences, true); // Allow confluences to wrap
+                insertCell(row, trade.timeFrame);
+                insertCell(row, trade.remarks, true); // Allow remarks to wrap
+                
+                // Special handling for chart link to make it a clickable link
+                const chartLinkCell = row.insertCell();
+                chartLinkCell.className = 'px-4 py-3 text-sm text-gray-700 whitespace-normal'; // Allow wrapping
+                if (trade.chartLink && trade.chartLink !== 'N/A' && (trade.chartLink.startsWith('http://') || trade.chartLink.startsWith('https://'))) {
+                    const link = document.createElement('a');
+                    link.href = trade.chartLink;
+                    link.textContent = "View Chart"; // Or use a shorter version of the link
+                    link.target = "_blank"; // Open in new tab
+                    link.rel = "noopener noreferrer";
+                    link.className = "text-indigo-600 hover:text-indigo-800 underline";
+                    chartLinkCell.appendChild(link);
+                } else {
+                    chartLinkCell.textContent = trade.chartLink; // Display as text if not a valid link
+                }
+                // Hidden timestamp cell (data is parsed but not displayed by default)
+                // const timestampCell = insertCell(row, trade.timestamp);
+                // timestampCell.classList.add('hidden');
+            });
+        }
+
+        function insertCell(row, text, allowWrap = false) {
+            const cell = row.insertCell();
+            cell.textContent = text;
+            cell.className = 'px-4 py-3 text-sm text-gray-700';
+            if (allowWrap) {
+                cell.classList.add('whitespace-normal');
+            } else {
+                cell.classList.add('whitespace-nowrap');
+            }
+            return cell; // Return cell for potential further modification
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // --- FILTERING LOGIC ---
+        function applyFilters() {
+            // Updated to use new filter input IDs and trade properties
+            const coinQuery = coinFilterInput.value.toLowerCase().trim();
+            const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
+            const dateQuery = dateFilterInput.value.trim();
+
+            const filteredTrades = allTrades.filter(trade => {
+                const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
+                const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
+                const tradeDate = trade.date ? trade.date : ''; // Assumes date is in a consistent format
+
+                const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
+                const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+                const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
+
+                return coinMatch && confluencesMatch && dateMatch;
+            });
+
+            renderTable(filteredTrades);
+        }
+
+        function resetFilters() {
+            // Updated to use new filter input IDs
+            coinFilterInput.value = '';
+            confluencesFilterInput.value = '';
+            dateFilterInput.value = '';
+            renderTable(allTrades);
+        }
+
+        // --- EVENT LISTENERS ---
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        resetFiltersBtn.addEventListener('click', resetFilters);
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.querySelector('#trading-journal-form iframe');
+            if (iframe && iframe.src.includes('YOUR_GOOGLE_FORM_EMBED_URL_HERE')) {
+                 const formSection = document.getElementById('trading-journal-form');
+                 const warningDiv = document.createElement('div');
+                 warningDiv.className = 'my-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md text-sm';
+                 warningDiv.textContent = 'Reminder: Please replace "https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" in the HTML with your actual Google Form embed URL to enable form submission.';
+                 formSection.insertBefore(warningDiv, iframe.parentElement);
+            }
+            fetchTrades();
+        });
+
+    </script>
+</body>
+</html>
