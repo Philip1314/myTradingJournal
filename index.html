@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Trading Journal & Performance</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
         /* Custom scrollbar for better aesthetics (optional) */
         ::-webkit-scrollbar {
@@ -21,6 +22,7 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
+            border-radius: 10px;
         }
         body {
             font-family: 'Inter', sans-serif; /* Default Tailwind font, good for readability */
@@ -35,6 +37,11 @@
             word-wrap: break-word; /* Older browsers */
             hyphens: auto; /* Enable hyphenation */
         }
+        /* Optional: Add some height to the chart canvas */
+        #performanceChart {
+             max-height: 300px; /* Adjust as needed */
+             margin-top: 1.5rem; /* Add some space above the chart */
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -46,21 +53,36 @@
             <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Trading Journal & Performance</h1>
         </header>
 
-        <section id="trading-journal-form" class="mb-10 p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Log a New Trade</h2>
-            <p class="mb-4 text-gray-600">
-                Use the embedded Google Form below to log your new trades. The data will automatically appear in the performance table after a short delay.
-                You might need to refresh the page to see the latest entries.
-            </p>
-            <div class="w-full h-[450px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-md border border-gray-200">
-                 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" class="rounded-md">Loading…</iframe>
+        <section id="trading-analysis" class="mb-10 p-6 bg-white rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Trading Performance Analysis</h2>
+
+            <div id="analysisMetrics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-blue-700">Total Trades</p>
+                    <p id="totalTrades" class="text-xl font-bold text-blue-900">-</p>
+                </div>
+                 <div class="bg-green-50 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-green-700">Wins</p>
+                    <p id="totalWins" class="text-xl font-bold text-green-900">-</p>
+                </div>
+                 <div class="bg-red-50 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-red-700">Losses</p>
+                    <p id="totalLosses" class="text-xl font-bold text-red-900">-</p>
+                </div>
+                 <div class="bg-yellow-50 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-yellow-700">Win Rate</p>
+                    <p id="winRate" class="text-xl font-bold text-yellow-900">-</p>
+                </div>
             </div>
+
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+
         </section>
 
         <section id="trading-performance" class="p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Performance</h2>
-
-            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Journal Data</h2> <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
                 <div>
                     <label for="coinFilter" class="block text-sm font-medium text-gray-700 mb-1">Coin Name:</label>
                     <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -71,7 +93,7 @@
                 </div>
                 <div>
                     <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
-                    <input type="text" id="dateFilter" placeholder="e.g., YYYY-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <input type="text" id="dateFilter" placeholder="e.g., 2023-MM-DD" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 </div>
                 <button id="applyFiltersBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
                 <button id="resetFiltersBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset Filters</button>
@@ -92,7 +114,7 @@
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chart Link</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
+                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
                     </thead>
                     <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
                         </tbody>
@@ -100,7 +122,16 @@
             </div>
             <p id="noResultsMessage" class="hidden text-center py-4 text-gray-500">No trades found matching your criteria.</p>
         </section>
-    </div>
+
+        <section id="trading-journal-form" class="mt-10 p-6 bg-white rounded-lg shadow-lg"> <h2 class="text-2xl font-semibold mb-4 text-gray-700">Log a New Trade</h2>
+            <p class="mb-4 text-gray-600">
+                Use the embedded Google Form below to log your new trades. The data will automatically appear in the performance table after a short delay (you might need to refresh).
+            </p>
+            <div class="w-full h-[450px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-md border border-gray-200">
+                 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" class="rounded-md">Loading…</iframe>
+            </div>
+        </section>
+        </div>
 
     <footer class="text-center py-8 mt-10 text-sm text-gray-500">
         <p>Trading Journal hosted on GitHub Pages. Data from Google Sheets.</p>
@@ -110,20 +141,31 @@
         // --- CONFIGURATION ---
         // IMPORTANT: Replace with your Google Sheet's CSV URL (File > Share > Publish to web > Select sheet & CSV > Copy URL)
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=752099388&single=true&output=csv';
+        // IMPORTANT: Replace with your Google Form Embed URL (Form > Send > Embed > Copy src URL)
+        const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header'; // Your existing URL is used here
 
         // --- DOM ELEMENTS ---
         const tableBody = document.getElementById('tradesTableBody');
         const loadingMessage = document.getElementById('loadingMessage');
         const errorMessage = document.getElementById('errorMessage');
         const noResultsMessage = document.getElementById('noResultsMessage');
-        // Updated filter input IDs
+
+        // Filter elements
         const coinFilterInput = document.getElementById('coinFilter');
         const confluencesFilterInput = document.getElementById('confluencesFilter');
         const dateFilterInput = document.getElementById('dateFilter');
         const applyFiltersBtn = document.getElementById('applyFiltersBtn');
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-        let allTrades = []; // To store all fetched trades for client-side filtering
+        // Analysis elements
+        const totalTradesElement = document.getElementById('totalTrades');
+        const totalWinsElement = document.getElementById('totalWins');
+        const totalLossesElement = document.getElementById('totalLosses');
+        const winRateElement = document.getElementById('winRate');
+        const performanceChartCanvas = document.getElementById('performanceChart');
+
+        let allTrades = []; // To store all fetched trades for client-side filtering and analysis
+        let performanceChart = null; // To hold the Chart.js instance
 
         // --- DATA FETCHING AND PARSING ---
         async function fetchTrades() {
@@ -132,23 +174,31 @@
             noResultsMessage.style.display = 'none';
             tableBody.innerHTML = ''; // Clear existing table data
 
-            if (GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE' || !GOOGLE_SHEET_CSV_URL) {
+            if (GOOGLE_SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE') || !GOOGLE_SHEET_CSV_URL) {
                 showError('Error: Google Sheet CSV URL is not configured. Please update the GOOGLE_SHEET_CSV_URL variable in the script.');
                 loadingMessage.style.display = 'none';
                 return;
             }
 
             try {
+                // Add a timestamp to the URL to prevent caching
                 const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&timestamp=${new Date().getTime()}`);
                 if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                     let errorText = `Network response was not ok: ${response.status}`;
+                     try { errorText += ` - ${await response.text()}`; } catch(e) {} // Attempt to read error body
+                    throw new Error(errorText);
                 }
                 const csvData = await response.text();
                 allTrades = parseCSV(csvData);
+
                 if (allTrades.length === 0 && csvData.trim() !== "" && !csvData.toLowerCase().includes("error")) {
-                     console.warn("CSV data was fetched but resulted in zero trades. CSV content:", csvData);
+                     console.warn("CSV data was fetched but resulted in zero trades. CSV content:", csvData.substring(0, 500) + '...'); // Log first 500 chars
                 }
+
+                // Initial render and analysis with all data
                 renderTable(allTrades);
+                updateAnalysis(allTrades);
+
             } catch (error) {
                 console.error('Failed to fetch or parse trades:', error);
                 showError(`Failed to load trades. Check the CSV URL and sheet permissions. Error: ${error.message}`);
@@ -160,23 +210,23 @@
         function parseCSV(csvText) {
             const lines = csvText.trim().split(/\r?\n/);
             if (lines.length < 2) {
-                console.log("CSV has no data rows.");
+                console.log("CSV has no data rows or headers.");
                 return [];
             }
 
             const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
             const trades = [];
 
-            // UPDATED Column name mapping to match your headers
+            // Column name mapping to match your headers (case-insensitive matching)
             const columnMappings = {
                 timestamp: ['timestamp'],
-                tradeDate: ['date'], // Specifically for the 'Date' column you provided
-                coinName: ['coin name'],
-                result: ['result'],
+                tradeDate: ['date', 'trade date'], // Look for 'Date' or 'Trade Date'
+                coinName: ['coin name', 'coin'],
+                result: ['result', 'outcome'], // Look for 'Result' or 'Outcome'
                 confluences: ['confluences'],
-                timeFrame: ['time frame'],
-                remarks: ['remarks'],
-                chartLink: ['chart link']
+                timeFrame: ['time frame', 'timeframe', 'tf'],
+                remarks: ['remarks', 'notes'],
+                chartLink: ['chart link', 'link']
             };
 
             function findHeaderIndex(headerNames) {
@@ -184,15 +234,16 @@
                     const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
                     if (index !== -1) return index;
                 }
-                // Fallback for partial match if exact fails (less critical if names are exact)
-                for (const name of headerNames) {
-                    const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
-                    if (index !== -1) {
-                        console.warn(`Partial match for header: '${name}' found as '${headers[index]}'. Exact match preferred.`);
-                        return index;
-                    }
-                }
-                return -1;
+                 // Fallback: Check if header contains the name
+                 for (const name of headerNames) {
+                     const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+                     if (index !== -1) {
+                          console.warn(`Partial match for header: looking for '${name}', found '${headers[index]}'. Exact match preferred.`);
+                          return index;
+                     }
+                 }
+                console.warn(`Could not find header for: ${headerNames.join(' or ')}`);
+                return -1; // Header not found
             }
 
             // Get indices for each of your specified columns
@@ -205,44 +256,59 @@
             const remarksIdx = findHeaderIndex(columnMappings.remarks);
             const chartLinkIdx = findHeaderIndex(columnMappings.chartLink);
 
-            // For debugging: Log which columns were found
-            // console.log("Header indices found:", { timestampIdx, dateIdx, coinNameIdx, resultIdx, confluencesIdx, timeFrameIdx, remarksIdx, chartLinkIdx });
+             // Check if essential headers are missing
+             if (dateIdx === -1 || coinNameIdx === -1 || resultIdx === -1) {
+                 showError("Essential columns (Date, Coin Name, Result) not found in CSV headers. Please check your Google Sheet.");
+                 return []; // Return empty array if essential columns are missing
+             }
+
 
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim() === '') continue;
 
-                const values = [];
-                let currentVal = '';
-                let inQuotes = false;
-                for (let char of lines[i]) {
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        values.push(currentVal.trim().replace(/^"|"$/g, ''));
-                        currentVal = '';
-                    } else {
-                        currentVal += char;
-                    }
-                }
-                values.push(currentVal.trim().replace(/^"|"$/g, ''));
+                // Simple split by comma (handle quoted commas if necessary, though the original code didn't full CSV parsing)
+                // A more robust CSV parser might be needed for complex text with commas/quotes
+                 let values;
+                 try {
+                      // Basic attempt to handle quoted commas - might not be perfect
+                      values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(val => val.trim().replace(/^"|"$/g, ''));
+                 } catch (e) {
+                      console.error("Failed to parse CSV line:", lines[i], e);
+                      continue; // Skip problematic line
+                 }
 
-                // UPDATED trade object creation based on your headers
+
+                // Create trade object using found indices
                 const trade = {
-                    timestamp: timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx] : 'N/A',
-                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : 'N/A'), // Use 'Date' column, fallback to Timestamp's date part
+                    // Prefer 'Date' column, fallback to Timestamp's date part if available
+                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : 'N/A'),
                     coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
-                    result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx] : 'N/A',
+                    // Trim and normalize result string for consistent matching
+                    result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
                     confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
                     timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
                     remarks: remarksIdx !== -1 && values[remarksIdx] ? values[remarksIdx] : 'N/A',
                     chartLink: chartLinkIdx !== -1 && values[chartLinkIdx] ? values[chartLinkIdx] : 'N/A',
+                    timestamp: timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx] : '' // Keep timestamp for potential sorting later if needed
                 };
-                trades.push(trade);
+                 // Only add trade if essential data exists
+                 if(trade.date !== 'N/A' && trade.coinName !== 'N/A' && trade.result !== 'N/A') {
+                    trades.push(trade);
+                 } else {
+                     console.warn("Skipping trade due to missing essential data:", trade);
+                 }
             }
+            // Sort trades by date/timestamp, most recent first (optional, but good practice)
+            trades.sort((a, b) => {
+                 const dateA = new Date(a.timestamp || a.date);
+                 const dateB = new Date(b.timestamp || b.date);
+                 return dateB - dateA; // Descending order
+            });
+
             return trades;
         }
 
-        // --- RENDERING ---
+        // --- RENDERING TABLE ---
         function renderTable(tradesToRender) {
             tableBody.innerHTML = '';
             noResultsMessage.style.display = 'none';
@@ -256,31 +322,31 @@
                 const row = tableBody.insertRow();
                 row.className = 'hover:bg-gray-50 transition-colors duration-150';
 
-                // UPDATED: Order of cells must match the new table headers in HTML
+                // Order of cells must match the table headers in HTML
                 insertCell(row, trade.date);
                 insertCell(row, trade.coinName);
                 insertCell(row, trade.result);
                 insertCell(row, trade.confluences, true); // Allow confluences to wrap
                 insertCell(row, trade.timeFrame);
                 insertCell(row, trade.remarks, true); // Allow remarks to wrap
-                
-                // Special handling for chart link to make it a clickable link
+
+                // Special handling for chart link
                 const chartLinkCell = row.insertCell();
                 chartLinkCell.className = 'px-4 py-3 text-sm text-gray-700 whitespace-normal'; // Allow wrapping
                 if (trade.chartLink && trade.chartLink !== 'N/A' && (trade.chartLink.startsWith('http://') || trade.chartLink.startsWith('https://'))) {
                     const link = document.createElement('a');
                     link.href = trade.chartLink;
-                    link.textContent = "View Chart"; // Or use a shorter version of the link
+                    link.textContent = "View Chart";
                     link.target = "_blank"; // Open in new tab
                     link.rel = "noopener noreferrer";
                     link.className = "text-indigo-600 hover:text-indigo-800 underline";
                     chartLinkCell.appendChild(link);
                 } else {
-                    chartLinkCell.textContent = trade.chartLink; // Display as text if not a valid link
+                    chartLinkCell.textContent = trade.chartLink; // Display as text
                 }
-                // Hidden timestamp cell (data is parsed but not displayed by default)
-                // const timestampCell = insertCell(row, trade.timestamp);
-                // timestampCell.classList.add('hidden');
+                // Hidden timestamp cell
+                const timestampCell = insertCell(row, trade.timestamp);
+                timestampCell.classList.add('hidden');
             });
         }
 
@@ -293,7 +359,7 @@
             } else {
                 cell.classList.add('whitespace-nowrap');
             }
-            return cell; // Return cell for potential further modification
+            return cell;
         }
 
         function showError(message) {
@@ -301,12 +367,112 @@
             errorMessage.style.display = 'block';
         }
 
+        // --- ANALYSIS LOGIC ---
+        function calculateMetrics(trades) {
+            const total = trades.length;
+            let wins = 0;
+            let losses = 0;
+            let breakEvens = 0;
+
+            trades.forEach(trade => {
+                const result = trade.result.toLowerCase();
+                if (result === 'win' || result.includes('profit')) { // Check for 'win' or 'profit'
+                    wins++;
+                } else if (result === 'loss' || result.includes('loss')) { // Check for 'loss'
+                    losses++;
+                } else {
+                    breakEvens++; // Count anything else as break even
+                }
+            });
+
+            const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) + '%' : 'N/A';
+
+            return {
+                total,
+                wins,
+                losses,
+                breakEvens,
+                winRate
+            };
+        }
+
+        function renderMetrics(metrics) {
+            totalTradesElement.textContent = metrics.total;
+            totalWinsElement.textContent = metrics.wins;
+            totalLossesElement.textContent = metrics.losses;
+            winRateElement.textContent = metrics.winRate;
+        }
+
+        function renderChart(metrics) {
+            // Destroy existing chart if it exists
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            const ctx = performanceChartCanvas.getContext('2d');
+
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Wins', 'Losses', 'Break Evens'],
+                    datasets: [{
+                        label: 'Trade Count',
+                        data: [metrics.wins, metrics.losses, metrics.breakEvens],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)', // Greenish for Wins
+                            'rgba(255, 99, 132, 0.6)', // Reddish for Losses
+                            'rgba(255, 205, 86, 0.6)'  // Yellowish for Break Evens
+                        ],
+                        borderColor: [
+                             'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 205, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                     responsive: true,
+                     maintainAspectRatio: false, // Allow height control via CSS
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                // Ensure ticks are integers
+                                callback: function(value) {
+                                    if (Number.isInteger(value)) {
+                                        return value;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Trade Outcomes Distribution'
+                        },
+                        legend: {
+                            display: false // Hide legend for a single dataset
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update both metrics and chart
+        function updateAnalysis(trades) {
+            const metrics = calculateMetrics(trades);
+            renderMetrics(metrics);
+            renderChart(metrics); // Render chart based on calculated metrics
+        }
+
+
         // --- FILTERING LOGIC ---
         function applyFilters() {
-            // Updated to use new filter input IDs and trade properties
             const coinQuery = coinFilterInput.value.toLowerCase().trim();
             const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
-            const dateQuery = dateFilterInput.value.trim();
+            const dateQuery = dateFilterInput.value.trim(); // Date might need specific format handling if using date pickers
 
             const filteredTrades = allTrades.filter(trade => {
                 const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
@@ -315,20 +481,22 @@
 
                 const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
                 const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+                // Simple string includes check for date, assumes YYYY-MM-DD or similar format
                 const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
 
                 return coinMatch && confluencesMatch && dateMatch;
             });
 
             renderTable(filteredTrades);
+            updateAnalysis(filteredTrades); // Update analysis with filtered data
         }
 
         function resetFilters() {
-            // Updated to use new filter input IDs
             coinFilterInput.value = '';
             confluencesFilterInput.value = '';
             dateFilterInput.value = '';
-            renderTable(allTrades);
+            renderTable(allTrades); // Render table with all data
+            updateAnalysis(allTrades); // Update analysis with all data
         }
 
         // --- EVENT LISTENERS ---
@@ -337,14 +505,22 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            const iframe = document.querySelector('#trading-journal-form iframe');
-            if (iframe && iframe.src.includes('YOUR_GOOGLE_FORM_EMBED_URL_HERE')) {
-                 const formSection = document.getElementById('trading-journal-form');
-                 const warningDiv = document.createElement('div');
-                 warningDiv.className = 'my-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md text-sm';
-                 warningDiv.textContent = 'Reminder: Please replace "https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" in the HTML with your actual Google Form embed URL to enable form submission.';
-                 formSection.insertBefore(warningDiv, iframe.parentElement);
-            }
+             // Check if the Google Form URL is set correctly
+             const formIframe = document.querySelector('#trading-journal-form iframe');
+             if (formIframe && formIframe.src.includes('YOUR_GOOGLE_FORM_EMBED_URL_HERE')) {
+                 formIframe.src = GOOGLE_FORM_EMBED_URL; // Set the correct URL
+                  const formSection = document.getElementById('trading-journal-form');
+                  const warningDiv = document.createElement('div');
+                  warningDiv.className = 'my-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md text-sm';
+                  warningDiv.textContent = 'Reminder: Please replace "https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" in the HTML with your actual Google Form embed URL to enable form submission.';
+                  formSection.insertBefore(warningDiv, formIframe.parentElement);
+             } else if (formIframe) {
+                  // If it's not the placeholder, assume the user set it, but still set the src from the variable
+                  formIframe.src = GOOGLE_FORM_EMBED_URL;
+             }
+
+
+            // Fetch trades on page load
             fetchTrades();
         });
 
