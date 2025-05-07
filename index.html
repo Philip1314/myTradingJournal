@@ -186,13 +186,9 @@
 
             <div class="mb-6">
                  <div class="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                     <p id="winRatePercentText" class="text-white">- Win %</p>
-                     <p id="lossRatePercentText" class="text-white">- Loss %</p>
-                 </div>
+                     <p id="winRatePercentText" class="text-white">- Win %</p> <p id="lossRatePercentText" class="text-white">- Loss %</p> </div>
                  <div id="winLossBarContainer" class="w-full flex rounded-md overflow-hidden" style="height: 20px;">
-                     <div id="winBar" class="bg-green-500" style="width: 0%;"></div>
-                     <div id="lossBar" class="bg-red-500" style="width: 0%;"></div>
-                 </div>
+                     <div id="winBar" class="bg-green-500" style="width: 0%;"></div> <div id="lossBar" class="bg-red-500" style="width: 0%;"></div> </div>
             </div>
 
 
@@ -271,6 +267,7 @@
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Position</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[150px]">Confluences</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Time Frame</th>
@@ -336,6 +333,7 @@
         const tableHeaders = {
             date: 'Date',
             coinName: 'Coin Name',
+            position: 'Position', // Added Position header
             result: 'Result',
             confluences: 'Confluences',
             timeFrame: 'Time Frame',
@@ -410,6 +408,7 @@
                 timestamp: ['timestamp'], // Timestamp from the form submission
                 tradeDate: ['date', 'trade date'], // Manual Date input from form
                 coinName: ['coin name', 'coin'],
+                position: ['position'], // Added mapping for Position
                 result: ['result', 'outcome'],
                 confluences: ['confluences'],
                 timeFrame: ['time frame', 'timeframe', 'tf'],
@@ -436,6 +435,7 @@
             const timestampIdx = findHeaderIndex(columnMappings.timestamp);
             const dateIdx = findHeaderIndex(columnMappings.tradeDate);
             const coinNameIdx = findHeaderIndex(columnMappings.coinName);
+            const positionIdx = findHeaderIndex(columnMappings.position); // Found Position Index
             const resultIdx = findHeaderIndex(columnMappings.result);
             const confluencesIdx = findHeaderIndex(columnMappings.confluences);
             const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
@@ -446,6 +446,7 @@
                  timestamp: timestampIdx,
                  date: dateIdx,
                  coinName: coinNameIdx,
+                 position: positionIdx, // Log Position Index
                  result: resultIdx,
                  confluences: confluencesIdx,
                  timeFrame: timeFrameIdx,
@@ -454,7 +455,7 @@
              });
 
 
-             // Check for essential columns
+             // Check for essential columns (Position is not strictly essential for basic display/filtering)
              if (dateIdx === -1 && timestampIdx === -1) {
                  showError("Essential 'Date' or 'Timestamp' column not found in CSV headers. Please check your Google Sheet columns.");
                  return [];
@@ -511,6 +512,7 @@
                     // Prefer manual date if available, otherwise use timestamp date part
                     date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : ''),
                     coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
+                    position: positionIdx !== -1 && values[positionIdx] ? values[positionIdx].trim() : 'N/A', // Extracted Position
                     result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
                     confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
                     timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
@@ -522,14 +524,19 @@
                 // Date Parsing: Try to create a valid Date object for filtering
                 let tradeDateObj = null;
                 if (trade.date && trade.date !== 'N/A') {
-                    // Attempt to parse MM/DD/YYYY orYYYY-MM-DD or similar
-                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
+                    // Attempt to parse DD/MM/YYYY, MM/DD/YYYY or YYYY-MM-DD
+                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // Matches DD/MM/YYYY or MM/DD/YYYY
                     const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); //YYYY-MM-DD
 
                     if (datePartsSlash) {
+                         // Assuming DD/MM/YYYY format based on user feedback
                          // Month is 0-indexed in JS Date: new Date(year, monthIndex, day)
-                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[1] - 1, datePartsSlash[2]);
+                         // datePartsSlash[1] is Day, datePartsSlash[2] is Month, datePartsSlash[3] is Year
+                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[2] - 1, datePartsSlash[1]);
+                         // Optional: Add a check here if the datePartsSlash[1] (day) is > 12,
+                         // it's more likely MM/DD/YYYY, but sticking to user's DD/MM/YYYY for now.
                     } else if (datePartsDash) {
+                         // YYYY-MM-DD format (existing logic)
                          tradeDateObj = new Date(datePartsDash[1], datePartsDash[2] - 1, datePartsDash[3]);
                     } else {
                         // Fallback: Try general Date constructor - less reliable
@@ -554,7 +561,7 @@
                      trade.dateObject = tradeDateObj; // Store date object for filtering
                       // Format date for display (optional, but good practice)
                      if (trade.dateObject) {
-                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) ifYYYY-MM-DD preferred
+                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) if YYYY-MM-DD preferred
                      } else {
                          trade.displayDate = trade.date; // Use original string if dateObject is null (e.g., no date column in sheet)
                      }
@@ -580,7 +587,7 @@
             return trades;
         }
 
-         // Helper function to format a Date object asYYYY-MM-DD for input values
+         // Helper function to format a Date object as YYYY-MM-DD for input values
          function formatDateForInput(date) {
              if (!date || isNaN(date.getTime())) return '';
              const year = date.getFullYear();
@@ -698,10 +705,15 @@
              const finalFilteredTrades = filteredTrades.filter(trade => {
                  const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
                  const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
+                 const tradePosition = trade.position ? trade.position.toLowerCase() : ''; // Include position in filter check (optional)
+
 
                  const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
                  const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+                 // const positionMatch = positionQuery === '' || tradePosition.includes(positionQuery); // Example if you add a position filter input
 
+
+                 // return coinMatch && confluencesMatch && positionMatch; // Update if position filter is added
                  return coinMatch && confluencesMatch;
              });
 
@@ -736,16 +748,11 @@
                 const result = trade.result.toLowerCase();
                 if (result === 'win' || result.includes('profit')) {
                     wins++;
-                }
-                // --- IMPORTANT: Check and potentially update this line ---
-                // If your Google Sheet uses different text for losses (e.g., "L", "SL", "Stopped Out"),
-                // add those conditions here using || (OR).
-                // Example: else if (result === 'loss' || result.includes('loss') || result === 'sl') {
-                else if (result === 'loss' || result.includes('loss')) {
+                } else if (result === 'loss' || result.includes('loss')) {
                     losses++;
                 } else {
-                    breakEvens++; // Count break evens (results that are neither win nor recognized loss)
-                }
+                    breakEvens++; // Count break evens
+                 }
             });
 
              // Calculate percentages out of *total* trades for the text display
@@ -786,23 +793,12 @@
          function renderWinLossBar(metrics) {
               if (winBar) winBar.style.width = `${metrics.winBarWidthPercent}%`;
               if (lossBar) lossBar.style.width = `${metrics.lossBarWidthPercent}%`;
-              // Ensure text color is visible against background color
-              // Changed text color to white for better contrast on the colored bars
-              if (winRatePercentText) {
-                  winRatePercentText.textContent = metrics.winRatePercentText;
-                  winRatePercentText.classList.remove('text-green-500', 'text-gray-800'); // Remove old colors
-                  winRatePercentText.classList.add('text-white'); // Add white color
-              }
-              if (lossRatePercentText) {
-                  lossRatePercentText.textContent = metrics.lossRatePercentText;
-                   lossRatePercentText.classList.remove('text-red-500', 'text-gray-800'); // Remove old colors
-                   lossRatePercentText.classList.add('text-white'); // Add white color
-              }
+              if (winRatePercentText) winRatePercentText.textContent = metrics.winRatePercentText;
+              if (lossRatePercentText) lossRatePercentText.textContent = metrics.lossRatePercentText;
 
-              // The commented-out code below was an attempt to dynamically change color,
-              // but setting a fixed high-contrast color is simpler and often better.
-              // if (winRatePercentText) winRatePercentText.classList.toggle('text-gray-800', metrics.winBarWidthPercent > 50 && metrics.winBarWidthPercent < 90); // Example adjustment
-              // if (lossRatePercentText) lossRatePercentText.classList.toggle('text-gray-800', metrics.lossBarWidthPercent > 50 && metrics.lossBarWidthPercent < 90); // Example adjustment
+              // Ensure text color is visible against background color (optional)
+              if (winRatePercentText) winRatePercentText.classList.toggle('text-gray-800', metrics.winBarWidthPercent > 50 && metrics.winBarWidthPercent < 90); // Example adjustment
+              if (lossRatePercentText) lossRatePercentText.classList.toggle('text-gray-800', metrics.lossBarWidthPercent > 50 && metrics.lossBarWidthPercent < 90); // Example adjustment
          }
 
 
@@ -842,17 +838,39 @@
                 coinCell.textContent = trade.coinName;
                 row.appendChild(coinCell);
 
-                // Result Cell - Add color based on result
+                // Position Cell - Added this cell
+                const positionCell = document.createElement('td');
+                positionCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-semibold');
+                positionCell.setAttribute('data-label', tableHeaders.position); // Add data-label
+                const positionText = trade.position.toLowerCase();
+                if (positionText === 'long') {
+                     positionCell.classList.add('text-green-500');
+                     positionCell.classList.remove('text-red-500', 'text-gray-400'); // Remove other potential colors
+                } else if (positionText === 'short') {
+                     positionCell.classList.add('text-red-500');
+                     positionCell.classList.remove('text-green-500', 'text-gray-400'); // Remove other potential colors
+                } else {
+                    positionCell.classList.add('text-gray-400'); // Default color for N/A or other values
+                     positionCell.classList.remove('text-green-500', 'text-red-500'); // Remove other potential colors
+                }
+                positionCell.textContent = trade.position;
+                row.appendChild(positionCell);
+
+
+                // Result Cell - Add color based on result (This was already here)
                 const resultCell = document.createElement('td');
                 resultCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-semibold');
                 resultCell.setAttribute('data-label', tableHeaders.result); // Add data-label
                 const resultText = trade.result.toLowerCase();
                 if (resultText === 'win' || resultText.includes('profit')) {
                     resultCell.classList.add('text-green-500');
+                     resultCell.classList.remove('text-red-500', 'text-yellow-500'); // Remove other potential colors
                 } else if (resultText === 'loss' || resultText.includes('loss')) {
                     resultCell.classList.add('text-red-500');
+                     resultCell.classList.remove('text-green-500', 'text-yellow-500'); // Remove other potential colors
                 } else {
                      resultCell.classList.add('text-yellow-500'); // For Break Even or other results
+                     resultCell.classList.remove('text-green-500', 'text-red-500'); // Remove other potential colors
                  }
                 resultCell.textContent = trade.result;
                 row.appendChild(resultCell);
