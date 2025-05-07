@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Trading Journal & Performance</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>My Trading Dashboard</title> <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
         /* Custom scrollbar for better aesthetics (optional) */
@@ -30,12 +29,13 @@
         /* Ensure table layout is fixed to prevent column width issues with long content */
         .table-fixed-layout {
             table-layout: fixed;
-            width: 100%;
+            width: 100%; /* Ensure table takes full width of container */
         }
         .table-fixed-layout th, .table-fixed-layout td {
             overflow-wrap: break-word; /* Break long words */
             word-wrap: break-word; /* Older browsers */
             hyphens: auto; /* Enable hyphenation */
+            /* min-width is applied via Tailwind classes directly on th elements below */
         }
         /* Optional: Add some height to the chart canvas */
         #performanceChart {
@@ -43,13 +43,11 @@
              margin-top: 1.5rem; /* Add some space above the chart */
         }
 
-        /* *** ADDED FOR MOBILE SCROLL PERFORMANCE *** */
-        .overflow-x-auto {
+        /* Styles for better mobile scroll performance */
+        .overflow-x-container {
             -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS Safari */
             transform: translateZ(0); /* Promote hardware acceleration */
-            /* Alternatively, you could use: will-change: transform, scroll-position; */
         }
-        /* ***************************************** */
 
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -59,8 +57,7 @@
     <div class="container mx-auto p-4 md:p-8">
 
         <header class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Trading Journal & Performance</h1>
-        </header>
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Trading Performance Dashboard</h1> </header>
 
         <section id="trading-analysis" class="mb-10 p-6 bg-white rounded-lg shadow-lg">
             <h2 class="text-2xl font-semibold mb-4 text-gray-700">Trading Performance Analysis</h2>
@@ -90,8 +87,9 @@
 
         </section>
 
-        <section id="trading-performance" class="p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Journal Data</h2> <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
+        <section id="trading-performance" class="mb-10 p-6 bg-white rounded-lg shadow-lg"> <h2 class="text-2xl font-semibold mb-6 text-gray-700">Trading Journal Data</h2>
+
+            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-md">
                 <div>
                     <label for="coinFilter" class="block text-sm font-medium text-gray-700 mb-1">Coin Name:</label>
                     <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -112,48 +110,38 @@
             <div id="errorMessage" class="hidden text-center py-4 text-red-600 bg-red-100 border border-red-400 rounded-md"></div>
 
             <p class="text-sm text-gray-500 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
-            <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
-                 <div style="-webkit-overflow-scrolling: touch; transform: translateZ(0);">
-                    <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coin Name</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confluences</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chart Link</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th> </tr>
-                        </thead>
-                        <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
-                            </tbody>
-                    </table>
-                 </div>
+            <div class="overflow-x-auto rounded-lg shadow border border-gray-200 overflow-x-container">
+                <table id="tradesTable" class="min-w-full divide-y divide-gray-200 table-fixed-layout">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Date</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Result</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Confluences</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Time Frame</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Remarks</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Chart Link</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
             </div>
             <p id="noResultsMessage" class="hidden text-center py-4 text-gray-500">No trades found matching your criteria.</p>
         </section>
 
-        <section id="trading-journal-form" class="mt-10 p-6 bg-white rounded-lg shadow-lg"> <h2 class="text-2xl font-semibold mb-4 text-gray-700">Log a New Trade</h2>
-            <p class="mb-4 text-gray-600">
-                Use the embedded Google Form below to log your new trades. The data will automatically appear in the performance table after a short delay (you might need to refresh).
-            </p>
-            <div class="w-full h-[450px] sm:h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-md border border-gray-200">
-                 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" class="rounded-md">Loading…</iframe>
-            </div>
-        </section>
         </div>
 
     <footer class="text-center py-8 mt-10 text-sm text-gray-500">
-        <p>Trading Journal hosted on GitHub Pages. Data from Google Sheets.</p>
-    </footer>
+        <p>Trading data powered by Google Sheets.</p> </footer>
 
     <script>
         // --- CONFIGURATION ---
         // IMPORTANT: Replace with your Google Sheet's CSV URL (File > Share > Publish to web > Select sheet & CSV > Copy URL)
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=752099388&single=true&output=csv';
-        // IMPORTANT: Replace with your Google Form Embed URL (Form > Send > Embed > Copy src URL)
-        const GOOGLE_FORM_EMBED_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header'; // Your existing URL is used here
+        // Google Form URL is no longer needed as the form section is removed.
+        // const GOOGLE_FORM_EMBED_URL = '...';
 
         // --- DOM ELEMENTS ---
         const tableBody = document.getElementById('tradesTableBody');
@@ -277,8 +265,6 @@
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim() === '') continue;
 
-                // Simple split by comma (handle quoted commas if necessary, though the original code didn't full CSV parsing)
-                // A more robust CSV parser might be needed for complex text with commas/quotes
                  let values;
                  try {
                       // Basic attempt to handle quoted commas - might not be perfect
@@ -309,7 +295,7 @@
                      console.warn("Skipping trade due to missing essential data:", trade);
                  }
             }
-            // Sort trades by date/timestamp, most recent first (optional, but good practice)
+            // Sort trades by date/timestamp, most recent first
             trades.sort((a, b) => {
                  const dateA = new Date(a.timestamp || a.date);
                  const dateB = new Date(b.timestamp || b.date);
@@ -492,7 +478,7 @@
 
                 const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
                 const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
-                // Simple string includes check for date, assumesYYYY-MM-DD or similar format
+                // Simple string includes check for date, assumes YYYY-MM-DD or similar format
                 const dateMatch = dateQuery === '' || (tradeDate && tradeDate.includes(dateQuery));
 
                 return coinMatch && confluencesMatch && dateMatch;
@@ -516,23 +502,9 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-             // Check if the Google Form URL is set correctly
-             const formIframe = document.querySelector('#trading-journal-form iframe');
-             if (formIframe && formIframe.src.includes('YOUR_GOOGLE_FORM_EMBED_URL_HERE')) {
-                 formIframe.src = GOOGLE_FORM_EMBED_URL; // Set the correct URL
-                  const formSection = document.getElementById('trading-journal-form');
-                  const warningDiv = document.createElement('div');
-                  warningDiv.className = 'my-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md text-sm';
-                  warningDiv.textContent = 'Reminder: Please replace "https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header" in the HTML with your actual Google Form embed URL to enable form submission.';
-                  formSection.insertBefore(warningDiv, formIframe.parentElement);
-             } else if (formIframe) {
-                  // If it's not the placeholder, assume the user set it, but still set the src from the variable
-                  formIframe.src = GOOGLE_FORM_EMBED_URL;
-             }
-
-
             // Fetch trades on page load
             fetchTrades();
+             // Removed Google Form related checks and warnings as the section is gone.
         });
 
     </script>
