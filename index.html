@@ -1,723 +1,858 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Trading Journal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom scrollbar for dark mode */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #333; /* Darker track */
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #555; /* Darker thumb */
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #777; /* Lighter on hover */
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Base dark mode styles */
-            background-color: #1a202c; /* Tailwind gray-900 */
-            color: #e2e8f0; /* Tailwind gray-200 */
-        }
-        /* Ensure table layout is fixed to prevent column width issues with long content */
-        .table-fixed-layout {
-            table-layout: fixed;
-            width: 100%; /* Ensure table takes full width of container */
-        }
-         .table-fixed-layout th, .table-fixed-layout td {
-            overflow-wrap: break-word; /* Break long words */
-            word-wrap: break-word; /* Older browsers */
-            hyphens: auto; /* Enable hyphenation */
-        }
-        /* Removed Chart Container adjustments */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trading Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #333; /* Darker track */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #555; /* Darker thumb */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777; /* Lighter on hover */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Base dark mode styles */
+            background-color: #1a202c; /* Tailwind gray-900 */
+            color: #e2e8f0; /* Tailwind gray-200 */
+        }
+        /* Ensure table layout is fixed to prevent column width issues with long content */
+        .table-fixed-layout {
+            table-layout: fixed;
+            width: 100%; /* Ensure table takes full width of container */
+        }
+         .table-fixed-layout th, .table-fixed-layout td {
+            overflow-wrap: break-word; /* Break long words */
+            word-wrap: break-word; /* Older browsers */
+            hyphens: auto; /* Enable hyphenation */
+        }
+        /* Removed Chart Container adjustments */
 
 
-        /* Styles for better mobile scroll performance */
-        .overflow-x-container {
-            -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS Safari */
-            transform: translateZ(0); /* Promote hardware acceleration */
-        }
+        /* Styles for better mobile scroll performance */
+        .overflow-x-container {
+            -webkit-overflow-scrolling: touch; /* Improve scrolling on iOS Safari */
+            transform: translateZ(0); /* Promote hardware acceleration */
+        }
 
-        /* Dark mode specific styles for elements */
-        .dark-card {
-            background-color: #2d3748; /* Tailwind gray-800 */
-            color: #e2e8f0; /* Tailwind gray-200 */
-        }
+        /* Dark mode specific styles for elements */
+        .dark-card {
+            background-color: #2d3748; /* Tailwind gray-800 */
+            color: #e2e8f0; /* Tailwind gray-200 */
+        }
 
-        .dark-filter-bg {
-            background-color: #4a5568; /* Tailwind gray-700 */
-        }
+        .dark-filter-bg {
+            background-color: #4a5568; /* Tailwind gray-700 */
+        }
 
-        .dark-input {
-             background-color: #2d3748; /* Tailwind gray-800 */
-             color: #e2e8f0; /* Tailwind gray-200 */
-             border-color: #4a5568; /* Tailwind gray-700 */
-        }
-         .dark-input::placeholder {
-             color: #a0aec0; /* Tailwind gray-500 */
-         }
-        .dark-input:focus {
-             border-color: #667eea; /* Tailwind indigo-500 */
-             box-shadow: 0 0 0 1px #667eea;
-        }
+        .dark-input {
+             background-color: #2d3748; /* Tailwind gray-800 */
+             color: #e2e8f0; /* Tailwind gray-200 */
+             border-color: #4a5568; /* Tailwind gray-700 */
+        }
+         .dark-input::placeholder {
+             color: #a0aec0; /* Tailwind gray-500 */
+         }
+        .dark-input:focus {
+             border-color: #667eea; /* Tailwind indigo-500 */
+             box-shadow: 0 0 0 1px #667eea;
+        }
 
-         .dark-table-header {
-             background-color: #4a5568; /* Tailwind gray-700 */
-             color: #a0aec0; /* Tailwind gray-500 */
-         }
+         .dark-table-header {
+             background-color: #4a5568; /* Tailwind gray-700 */
+             color: #a0aec0; /* Tailwind gray-500 */
+         }
 
-         .dark-table-row {
-             background-color: #2d3748; /* Tailwind gray-800 */
-             color: #e2e8f0; /* Tailwind gray-200 */
-         }
-         .dark-table-row:hover {
-             background-color: #4a5568; /* Tailwind gray-700 */
-         }
+         .dark-table-row {
+             background-color: #2d3748; /* Tailwind gray-800 */
+             color: #e2e8f0; /* Tailwind gray-200 */
+         }
+         .dark-table-row:hover {
+             background-color: #4a5568; /* Tailwind gray-700 */
+         }
 
-         .dark-divide-gray-200 > * + * {
-             border-color: #4a5568; /* Tailwind gray-700 */
-         }
+         .dark-divide-gray-200 > * + * {
+             border-color: #4a5568; /* Tailwind gray-700 */
+         }
 
-        /* Filter button active state */
-        .filter-button.active {
-            background-color: #4c51bf; /* Darker indigo */
-            border-color: #434190;
-        }
-        /* Custom date input specific styling */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1); /* Make calendar icon visible in dark mode */
-        }
+        /* Filter button active state */
+        .filter-button.active {
+            background-color: #4c51bf; /* Darker indigo */
+            border-color: #434190;
+        }
+        /* Custom date input specific styling */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); /* Make calendar icon visible in dark mode */
+        }
 
 
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-gray-200">
 
-    <div class="container mx-auto p-4 md:p-8">
-
-        <header class="mb-4 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">My Trading Journal</h1>
-        </header>
-
-        <section id="trading-analysis" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
-            <div class="flex justify-between items-center mb-4">
-                 <h2 class="text-2xl font-semibold text-gray-200">Performance Summary</h2>
-            </div>
-
-            <div class="mb-6">
-                 <div class="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                     <p id="winRatePercentText" class="text-green-500">- Win %</p> <p id="lossRatePercentText" class="text-red-500">- Loss %</p> </div>
-                 <div id="winLossBarContainer" class="w-full flex rounded-md overflow-hidden" style="height: 20px;">
-                     <div id="winBar" class="bg-green-500" style="width: 0%;"></div> <div id="lossBar" class="bg-red-500" style="width: 0%;"></div> </div>
-            </div>
-
-
-            <div id="analysisMetrics" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-gray-400">Total Trades</p>
-                    <p id="totalTrades" class="text-xl font-bold text-gray-200">-</p>
-                </div>
-                 <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-green-500">Wins</p>
-                    <p id="totalWins" class="text-xl font-bold text-green-400">-</p>
-                </div>
-                 <div class="bg-gray-800 p-4 rounded-md text-center">
-                    <p class="text-sm font-medium text-red-500">Losses</p>
-                    <p id="totalLosses" class="text-xl font-bold text-red-400">-</p>
-                </div>
-                 </div>
-
-            </section>
-
-        <section id="trading-performance" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-200">Trading Journal Data</h2>
-
-            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 rounded-md dark-filter-bg">
-
-                <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
-                     <span class="text-sm font-medium text-gray-300">Quick Dates:</span>
-                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 active" data-time-period="all">All</button>
-                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="90d">Last 90 days</button>
-                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="30d">Last 30 days</button>
-                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="7d">Last 7 days</button>
-                </div>
-
-                <div class="flex flex-wrap gap-4 items-end w-full md:w-auto">
-                     <div>
-                         <label for="startDate" class="block text-sm font-medium text-gray-300 mb-1">Start Date:</label>
-                         <input type="date" id="startDate" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
-                     </div>
-                     <div>
-                         <label for="endDate" class="block text-sm font-medium text-gray-300 mb-1">End Date:</label>
-                         <input type="date" id="endDate" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
-                     </div>
-                </div>
-
-                <div class="flex flex-wrap gap-4 items-end w-full border-t border-gray-700 pt-4 mt-4">
-                     <span class="text-sm font-medium text-gray-300">Keyword Filters:</span>
-                     <div>
-                         <label for="coinFilter" class="block text-sm font-medium text-gray-300 mb-1">Coin Name:</label>
-                         <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
-                     </div>
-                     <div>
-                         <label for="confluencesFilter" class="block text-sm font-medium text-gray-300 mb-1">Confluences:</label>
-                         <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
-                     </div>
-
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto text-center">
-                        Log a New Trade
-                    </a>
-
-                    <button id="applyFiltersBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
-                    <button id="resetFiltersBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset ALL Filters</button>
-                 </div>
-
-            </div>
-
-            <div id="loadingMessage" class="text-center py-4 text-gray-400">Loading trading data...</div>
-            <div id="errorMessage" class="hidden text-center py-4 text-red-400 bg-red-900 border border-red-700 rounded-md"></div>
-
-            <p class="text-sm text-gray-400 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
-            <div class="overflow-x-auto rounded-lg shadow border border-gray-700 overflow-x-container">
-                <table id="tradesTable" class="min-w-full divide-y dark-divide-gray-200 table-fixed-layout">
-                    <thead class="dark-table-header">
-                        <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[150px]">Confluences</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Time Frame</th>
-                                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[120px]">Chart Link</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden">Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tradesTableBody" class="dark-table-row divide-y dark-divide-gray-200">
-                        </tbody>
-                </table>
-            </div>
-            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p>
-        </section>
-
-    </div>
-
-    <footer class="text-center py-8 mt-10 text-sm text-gray-500">
-        <p>Trading data powered by Google Sheets.</p>
-    </footer>
-
-    <script>
-        // --- CONFIGURATION ---
-        // !!! IMPORTANT !!! Replace this with your published Google Sheet CSV URL
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=1826611002&single=true&output=csv';
-
-
-        // --- DOM ELEMENTS ---
-        const tableBody = document.getElementById('tradesTableBody');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const noResultsMessage = document.getElementById('noResultsMessage');
-
-        // Filter elements
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        const coinFilterInput = document.getElementById('coinFilter');
-        const confluencesFilterInput = document.getElementById('confluencesFilter');
-        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-
-        // Analysis elements
-        const totalTradesElement = document.getElementById('totalTrades');
-        const totalWinsElement = document.getElementById('totalWins');
-        const totalLossesElement = document.getElementById('totalLosses');
-        // Removed winRateElement as the HTML element is removed
-        // const winRateElement = document.getElementById('winRate');
-
-
-        // Elements for the Win/Loss bar visualization
-        const winRatePercentText = document.getElementById('winRatePercentText');
-        const lossRatePercentText = document.getElementById('lossRatePercentText');
-        const winBar = document.getElementById('winBar');
-        const lossBar = document.getElementById('lossBar');
-
-
-        const timePeriodButtons = document.querySelectorAll('.filter-button');
-
-        let allTrades = [];
-        let currentTimePeriod = 'all';
-
-
-        // --- DATA FETCHING AND PARSING ---
-        async function fetchTrades() {
-            loadingMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            noResultsMessage.style.display = 'none';
-            tableBody.innerHTML = '';
-
-            console.log('Attempting to fetch data from:', GOOGLE_SHEET_CSV_URL); // Log the URL being fetched
-
-            if (GOOGLE_SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE') || !GOOGLE_SHEET_CSV_URL || !GOOGLE_SHEET_CSV_URL.startsWith('https://docs.google.com/spreadsheets/d/')) {
-                 showError('Error: Google Sheet CSV URL is not configured correctly. Please update the GOOGLE_SHEET_CSV_URL variable in the script and ensure it is a published CSV link.');
-                 loadingMessage.style.display = 'none';
-                 return;
-            }
-
-            try {
-                // Add timestamp to prevent caching
-                const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&timestamp=${new Date().getTime()}`);
-                console.log('Fetch response status:', response.status); // Log the response status
-                if (!response.ok) {
-                    let errorText = `Network response was not ok: ${response.status}`;
-                    try { errorText += ` - ${await response.text()}`; } catch(e) {} // Attempt to get response body for more info
-                    console.error('Fetch failed:', errorText); // Log the specific fetch error
-                    throw new Error(errorText);
-                }
-                const csvData = await response.text();
-                console.log('Fetched CSV Data Preview:', csvData.substring(0, 500) + '...'); // Log a preview of fetched data
-                allTrades = parseCSV(csvData);
-                console.log('Parsed Trades:', allTrades); // Log the parsed trade objects
-
-                if (allTrades.length === 0 && csvData.trim() !== "" && !csvData.toLowerCase().includes("error")) {
-                     console.warn("CSV data was fetched but resulted in zero trades or only headers.");
-                } else if (allTrades.length === 0 && csvData.trim() === "") {
-                     console.warn("CSV data was fetched but was empty.");
-                } else if (allTrades.length > 0) {
-                     console.log(`Successfully parsed ${allTrades.length} trades.`);
-                }
-
-
-                applyTimePeriodFilter('all'); // Initial filter: Apply 'All' time period
-
-            } catch (error) {
-                console.error('Failed to fetch or parse trades:', error);
-                showError(`Failed to load trades. Check the CSV URL, sheet permissions, and column headers. Error: ${error.message}`);
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        }
-
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split(/\r?\n/);
-             console.log(`CSV has ${lines.length} lines.`); // Log number of lines
-            if (lines.length < 2) {
-                 console.log("CSV has no data rows or headers, or is empty.");
-                 return [];
-            }
-
-            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
-             console.log('CSV Headers:', headers); // Log the parsed headers
-            const trades = [];
-
-            const columnMappings = {
-                timestamp: ['timestamp'], // Timestamp from the form submission
-                tradeDate: ['date', 'trade date'], // Manual Date input from form
-                coinName: ['coin name', 'coin'],
-                result: ['result', 'outcome'],
-                confluences: ['confluences'],
-                timeFrame: ['time frame', 'timeframe', 'tf'],
-                remarks: ['remarks', 'notes'],
-                chartLink: ['chart link', 'link', 'chart'] // Added 'chart'
-            };
-
-            function findHeaderIndex(headerNames) {
-                for (const name of headerNames) {
-                    const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
-                    if (index !== -1) return index;
-                }
-                 // Fallback: Check for headers that *include* the target name
-                 for (const name of headerNames) {
-                      const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
-                      if (index !== -1) {
-                          console.warn(`Found header '${headers[index]}' matching '${name}' via substring match.`);
-                          return index;
-                      }
-                 }
-                return -1;
-            }
-
-            const timestampIdx = findHeaderIndex(columnMappings.timestamp);
-            const dateIdx = findHeaderIndex(columnMappings.tradeDate);
-            const coinNameIdx = findHeaderIndex(columnMappings.coinName);
-            const resultIdx = findHeaderIndex(columnMappings.result);
-            const confluencesIdx = findHeaderIndex(columnMappings.confluences);
-            const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
-            const remarksIdx = findHeaderIndex(columnMappings.remarks);
-            const chartLinkIdx = findHeaderIndex(columnMappings.chartLink);
-
-             console.log('Header Indices Found:', {
-                 timestamp: timestampIdx,
-                 date: dateIdx,
-                 coinName: coinNameIdx,
-                 result: resultIdx,
-                 confluences: confluencesIdx,
-                 timeFrame: timeFrameIdx,
-                 remarks: remarksIdx, // Still parse remarks if present in CSV
-                 chartLink: chartLinkIdx
-             });
-
-
-             // Check for essential columns
-             if (dateIdx === -1 && timestampIdx === -1) {
-                 showError("Essential 'Date' or 'Timestamp' column not found in CSV headers. Please check your Google Sheet columns.");
-                 return [];
-             }
-             if (coinNameIdx === -1) {
-                 showError("Essential 'Coin Name' column not found in CSV headers. Please check your Google Sheet columns.");
-                 return [];
-             }
-             if (resultIdx === -1) {
-                 showError("Essential 'Result' column not found in CSV headers. Please check your Google Sheet columns.");
-                 return [];
-             }
-
-
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim() === '') continue;
-
-                 let values;
-                 // Improved regex to handle commas within quoted fields - simple version
-                 try {
-                     values = [];
-                     let currentValue = '';
-                     let inQuotes = false;
-                     for (let j = 0; j < lines[i].length; j++) {
-                         const char = lines[i][j];
-                         if (char === '"') {
-                             inQuotes = !inQuotes;
-                              // Basic check for double quote escaping ""
-                             if (j + 1 < lines[i].length && lines[i][j + 1] === '"' && inQuotes) {
-                                  currentValue += '"';
-                                  j++; // Skip the next quote
-                              }
-                         } else if (char === ',' && !inQuotes) {
-                             values.push(currentValue); // Do not trim yet
-                             currentValue = '';
-                         } else {
-                             currentValue += char;
-                         }
-                     }
-                     values.push(currentValue); // Add the last value
-
-                      // Now trim values after parsing
-                      values = values.map(val => val.trim().replace(/^"|"$/g, ''));
-                      // console.log(`Parsed values for line ${i+1}:`, values); // Log values for each line - can be chatty
-
-
-                 } catch (e) {
-                     console.error("Failed to parse CSV line:", lines[i], e);
-                     continue; // Skip this line if parsing fails
-                 }
-
-
-                const trade = {
-                    // Prefer manual date if available, otherwise use timestamp date part
-                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : ''),
-                    coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
-                    result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
-                    confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
-                    timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
-                    remarks: remarksIdx !== -1 && values[remarksIdx] ? values[remarksIdx] : 'N/A', // Keep for internal data, just don't display
-                    chartLink: chartLinkIdx !== -1 && values[chartLinkIdx] ? values[chartLinkIdx] : 'N/A'
-                    // Timestamp is not needed for display or filtering, but could be stored if desired
-                };
-
-                // Date Parsing: Try to create a valid Date object for filtering
-                let tradeDateObj = null;
-                if (trade.date && trade.date !== 'N/A') {
-                    // Attempt to parse MM/DD/YYYY or YYYY-MM-DD or similar
-                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
-                    const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); // YYYY-MM-DD
-
-                    if (datePartsSlash) {
-                         // Month is 0-indexed in JS Date: new Date(year, monthIndex, day)
-                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[1] - 1, datePartsSlash[2]);
-                    } else if (datePartsDash) {
-                         tradeDateObj = new Date(datePartsDash[1], datePartsDash[2] - 1, datePartsDash[3]);
-                    } else {
-                        // Fallback: Try general Date constructor - less reliable
-                        const parsed = new Date(trade.date);
-                        if (!isNaN(parsed.getTime())) {
-                            tradeDateObj = parsed;
-                        } else {
-                            console.warn(`Could not reliably parse date string "${trade.date}" on line ${i + 1}. Skipping date filtering for this trade.`);
-                            // If date is essential and can't be parsed, you might want to skip the trade
-                            // continue; // Uncomment to skip trades with unparseable dates
-                        }
-                    }
-                }
-
-
-                 // Only add trade if essential data is present and date was parsed successfully (if a date was expected)
-                 // If dateIdx and timestampIdx are both -1, we won't have a date, but we should still add the trade if others are present
-                 const hasEssentialData = trade.coinName !== 'N/A' && trade.result !== 'N/A';
-                 const dateIsValid = (dateIdx === -1 && timestampIdx === -1) || (tradeDateObj && !isNaN(tradeDateObj.getTime()));
-
-                 if (hasEssentialData && dateIsValid) {
-                     trade.dateObject = tradeDateObj; // Store date object for filtering
-                      // Format date for display (optional, but good practice)
-                     if (trade.dateObject) {
-                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) if YYYY-MM-DD preferred
-                     } else {
-                         trade.displayDate = trade.date; // Use original string if dateObject is null (e.g., no date column in sheet)
-                     }
-                     trades.push(trade);
-                     // console.log('Added valid trade:', trade); // Log valid trades
-                 } else {
-                     console.warn("Skipping trade due to missing essential data or invalid date:", trade, `(Line ${i+1})`);
-                 }
-            }
-
-             // Sort by date object if available, otherwise potentially by original date string or do not sort
-            trades.sort((a, b) => {
-                 if (a.dateObject && b.dateObject) {
-                      return a.dateObject.getTime() - b.dateObject.getTime(); // Compare timestamps
-                 }
-                 // Fallback sort if dateObjects are not reliable, or keep original order
-                 // return 0; // Keep original order
-                 // Or attempt string comparison (less accurate for dates)
-                 return a.date.localeCompare(b.date);
-            });
-
-
-            return trades;
-        }
-
-         // Helper function to format a Date object as YYYY-MM-DD for input values
-         function formatDateForInput(date) {
-             if (!date || isNaN(date.getTime())) return '';
-             const year = date.getFullYear();
-             const month = ('0' + (date.getMonth() + 1)).slice(-2); // Months are 0-indexed
-             const day = ('0' + date.getDate()).slice(-2);
-             return `${year}-${month}-${day}`;
-         }
-
-
-        // --- FILTERING LOGIC ---
-
-        // This function now just sets the date inputs and active button, then calls applyFilters
-        function applyTimePeriodFilter(period) {
-             const now = new Date();
-             let startDate = null;
-             // Set end date to the end of the current day for inclusive filtering
-             let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-
-             if (period === '7d') {
-                 startDate = new Date(now);
-                 startDate.setDate(now.getDate() - 7);
-                 startDate.setHours(0, 0, 0, 0); // Set to start of the day
-             } else if (period === '30d') {
-                  startDate = new Date(now);
-                 startDate.setDate(now.getDate() - 30);
-                 startDate.setHours(0, 0, 0, 0);
-             } else if (period === '90d') {
-                  startDate = new Date(now);
-                 startDate.setDate(now.getDate() - 90);
-                 startDate.setHours(0, 0, 0, 0);
-             }
-             // 'all' means startDate remains null, endDate covers all future dates too
-
-             // Update custom date inputs based on the selected period
-             startDateInput.value = startDate ? formatDateForInput(startDate) : '';
-             endDateInput.value = endDate ? formatDateForInput(endDate) : '';
-
-
-             // Update active button class
-             timePeriodButtons.forEach(button => {
-                 if (button.dataset.timePeriod === period) {
-                     button.classList.add('active');
-                     button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-                     button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-                 } else {
-                     button.classList.remove('active');
-                     button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                     button.classList.add('bg-gray-700', 'hover:bg-gray-600');
-                 }
-             });
-
-             // Apply all filters (including the dates just set)
-             applyFilters();
-        }
-
-         // This function reads ALL filter inputs and applies the filter to allTrades
-         function applyFilters() {
-             let filteredTrades = allTrades;
-             console.log('Applying filters...'); // Log filter application start
-
-
-             // 1. Apply Date Range Filter (Custom inputs take precedence)
-             const customStartDateValue = startDateInput.value;
-             const customEndDateValue = endDateInput.value;
-
-             let filterStartDate = null;
-             let filterEndDate = null;
-
-             if (customStartDateValue) {
-                 const date = new Date(customStartDateValue);
-                 if (!isNaN(date.getTime())) {
-                     filterStartDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0); // Start of the selected day
-                 } else {
-                      console.warn("Invalid custom start date entered.");
-                 }
-             }
-
-             if (customEndDateValue) {
-                  const date = new Date(customEndDateValue);
-                 if (!isNaN(date.getTime())) {
-                     filterEndDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999); // End of the selected day
-                 } else {
-                      console.warn("Invalid custom end date entered.");
-                 }
-             }
-             console.log('Date Filter Range:', filterStartDate, filterEndDate); // Log the date range being used
-
-             filteredTrades = filteredTrades.filter(trade => {
-                 // Allow trades without a dateObject to pass date filter if no date filter is set
-                 if (!trade.dateObject) {
-                     return !filterStartDate && !filterEndDate;
-                 }
-
-
-                 const tradeTime = trade.dateObject.getTime();
-
-                 // Check if tradeDate is on or after the start date
-                 const afterStartDate = filterStartDate ? tradeTime >= filterStartDate.getTime() : true;
-
-                 // Check if tradeDate is on or before the end date
-                 const beforeEndDate = filterEndDate ? tradeTime <= filterEndDate.getTime() : true;
-
-                 return afterStartDate && beforeEndDate;
-             });
-             console.log(`Filtered by date: ${filteredTrades.length} trades remaining.`); // Log trades after date filter
-
-
-             // 2. Apply Keyword Filters to the date-filtered trades
-             const coinQuery = coinFilterInput.value.toLowerCase().trim();
-             const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
-             console.log('Keyword Filters:', {coin: coinQuery, confluences: confluencesQuery}); // Log keyword queries
-
-
-             const finalFilteredTrades = filteredTrades.filter(trade => {
-                 const coinMatch = coinQuery === '' || (trade.coinName && trade.coinName.toLowerCase().includes(coinQuery));
-                 const confluencesMatch = confluencesQuery === '' || (trade.confluences && trade.confluences.toLowerCase().includes(confluencesQuery));
-                 return coinMatch && confluencesMatch;
-             });
-
-             console.log(`Filtered by keywords: ${finalFilteredTrades.length} trades remaining.`); // Log trades after keyword filter
-
-
-             displayTrades(finalFilteredTrades);
-             updateAnalysisMetrics(finalFilteredTrades);
-        }
-
-         // Function to display trades in the table
-         function displayTrades(tradesToDisplay) {
-             tableBody.innerHTML = ''; // Clear existing rows
-             console.log(`Displaying ${tradesToDisplay.length} trades.`); // Log number of trades to display
-
-             if (tradesToDisplay.length === 0) {
-                 noResultsMessage.style.display = 'block';
-                 return;
-             } else {
-                 noResultsMessage.style.display = 'none';
-             }
-
-             tradesToDisplay.forEach(trade => {
-                 const row = document.createElement('tr');
-                 row.classList.add('dark-table-row', 'hover:bg-gray-700'); // Use Tailwind classes
-
-                 const resultColorClass = trade.result.toLowerCase() === 'win' ? 'text-green-500' : (trade.result.toLowerCase() === 'loss' ? 'text-red-500' : 'text-gray-400');
-                 const chartLinkHtml = trade.chartLink && trade.chartLink !== 'N/A' && isValidUrl(trade.chartLink)
-                   ? `<a href="${trade.chartLink}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">Link</a>`
-                   : 'N/A';
-
-
-                 row.innerHTML = `
-                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-200">${trade.displayDate || 'N/A'}</td>
-                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">${trade.coinName}</td>
-                     <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold ${resultColorClass}">${trade.result}</td>
-                     <td class="px-4 py-3 text-sm text-gray-300">${trade.confluences}</td>
-                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">${trade.timeFrame}</td>
-                                          <td class="px-4 py-3 whitespace-nowrap text-sm">${chartLinkHtml}</td>
-                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 hidden">${trade.dateObject ? trade.dateObject.getTime() : ''}</td>                  `;
-                 tableBody.appendChild(row);
-             });
-         }
-
-        // --- ANALYSIS METRICS ---
-        function updateAnalysisMetrics(trades) {
-             const totalTrades = trades.length;
-             const totalWins = trades.filter(trade => trade.result.toLowerCase() === 'win').length;
-             const totalLosses = trades.filter(trade => trade.result.toLowerCase() === 'loss').length;
-             const winRate = totalTrades > 0 ? (totalWins / totalTrades) * 100 : 0;
-             const lossRate = totalTrades > 0 ? (totalLosses / totalTrades) * 100 : 0;
-
-             totalTradesElement.textContent = totalTrades;
-             totalWinsElement.textContent = totalWins;
-             totalLossesElement.textContent = totalLosses;
-
-             // Update Win/Loss Bar
-             winBar.style.width = `${winRate}%`;
-             lossBar.style.width = `${lossRate}%`;
-
-             // Update Win/Loss Percent Text
-             winRatePercentText.textContent = `${winRate.toFixed(1)}% Win Rate`;
-             lossRatePercentText.textContent = `${lossRate.toFixed(1)}% Loss Rate`;
-
-             console.log('Analysis Metrics Updated:', {totalTrades, totalWins, totalLosses, winRate, lossRate}); // Log updated metrics
-        }
-
-
-        // --- UTILITY FUNCTIONS ---
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            console.error('Displaying Error:', message); // Log error being displayed
-        }
-
-        function isValidUrl(string) {
-            try {
-                 new URL(string);
-                 return true;
-            } catch (_) {
-                 return false;
-            }
-        }
-
-
-        // --- EVENT LISTENERS ---
-        timePeriodButtons.forEach(button => {
-             button.addEventListener('click', () => {
-                 const period = button.dataset.timePeriod;
-                 applyTimePeriodFilter(period);
-             });
-        });
-
-        applyFiltersBtn.addEventListener('click', applyFilters);
-
-        resetFiltersBtn.addEventListener('click', () => {
-            startDateInput.value = '';
-            endDateInput.value = '';
-            coinFilterInput.value = '';
-            confluencesFilterInput.value = '';
-            applyTimePeriodFilter('all'); // Reset to 'All' period and re-apply filters
-        });
-
-        // Initial fetch and display on page load
-        fetchTrades();
-
-    </script>
-
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="mb-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">My Trading Journal</h1>
+        </header>
+
+        <section id="trading-analysis" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-semibold text-gray-200">Performance Summary</h2>
+            </div>
+
+            <div class="mb-6">
+                 <div class="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                     <p id="winRatePercentText" class="text-green-500">- Win %</p> <p id="lossRatePercentText" class="text-red-500">- Loss %</p> </div>
+                 <div id="winLossBarContainer" class="w-full flex rounded-md overflow-hidden" style="height: 20px;">
+                     <div id="winBar" class="bg-green-500" style="width: 0%;"></div> <div id="lossBar" class="bg-red-500" style="width: 0%;"></div> </div>
+            </div>
+
+
+            <div id="analysisMetrics" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-800 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-gray-400">Total Trades</p>
+                    <p id="totalTrades" class="text-xl font-bold text-gray-200">-</p>
+                </div>
+                 <div class="bg-gray-800 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-green-500">Wins</p>
+                    <p id="totalWins" class="text-xl font-bold text-green-400">-</p>
+                </div>
+                 <div class="bg-gray-800 p-4 rounded-md text-center">
+                    <p class="text-sm font-medium text-red-500">Losses</p>
+                    <p id="totalLosses" class="text-xl font-bold text-red-400">-</p>
+                </div>
+                 </div>
+
+            </section>
+
+        <section id="trading-performance" class="mb-10 p-6 rounded-lg shadow-lg dark-card">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-200">Trading Journal Data</h2>
+
+            <div class="filters mb-6 flex flex-wrap gap-4 items-end p-4 rounded-md dark-filter-bg">
+
+                <div class="flex flex-wrap gap-2 items-center w-full md:w-auto">
+                     <span class="text-sm font-medium text-gray-300">Quick Dates:</span>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600 active" data-time-period="all">All</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="90d">Last 90 days</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="30d">Last 30 days</button>
+                     <button class="filter-button px-3 py-1 text-sm rounded border border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600" data-time-period="7d">Last 7 days</button>
+                </div>
+
+                <div class="flex flex-wrap gap-4 items-end w-full md:w-auto">
+                     <div>
+                         <label for="startDate" class="block text-sm font-medium text-gray-300 mb-1">Start Date:</label>
+                         <input type="date" id="startDate" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                     </div>
+                     <div>
+                         <label for="endDate" class="block text-sm font-medium text-gray-300 mb-1">End Date:</label>
+                         <input type="date" id="endDate" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                     </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 items-end w-full border-t border-gray-700 pt-4 mt-4">
+                     <span class="text-sm font-medium text-gray-300">Keyword Filters:</span>
+                     <div>
+                         <label for="coinFilter" class="block text-sm font-medium text-gray-300 mb-1">Coin Name:</label>
+                         <input type="text" id="coinFilter" placeholder="e.g., BTC" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                     </div>
+                     <div>
+                         <label for="confluencesFilter" class="block text-sm font-medium text-gray-300 mb-1">Confluences:</label>
+                         <input type="text" id="confluencesFilter" placeholder="e.g., RSI Divergence" class="w-full md:w-auto mt-1 block px-3 py-2 rounded-md shadow-sm sm:text-sm dark-input">
+                     </div>
+
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc3C614YyGITnD6D5JHJYxZh6PgQKP17HF5VlxMG6LHRiK0IA/viewform?usp=header"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto text-center">
+                        Log a New Trade
+                    </a>
+
+                    <button id="applyFiltersBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Apply Filters</button>
+                    <button id="resetFiltersBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm w-full sm:w-auto">Reset ALL Filters</button>
+                 </div>
+
+            </div>
+
+            <div id="loadingMessage" class="text-center py-4 text-gray-400">Loading trading data...</div>
+            <div id="errorMessage" class="hidden text-center py-4 text-red-400 bg-red-900 border border-red-700 rounded-md"></div>
+
+            <p class="text-sm text-gray-400 mb-2 md:hidden">Scroll table horizontally to see all columns &rarr;</p>
+            <div class="overflow-x-auto rounded-lg shadow border border-gray-700 overflow-x-container">
+                <table id="tradesTable" class="min-w-full divide-y dark-divide-gray-200 table-fixed-layout">
+                    <thead class="dark-table-header">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Date</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[100px]">Coin Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Result</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[150px]">Confluences</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[80px]">Time Frame</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[200px]">Remarks</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider min-w-[120px]">Chart Link</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesTableBody" class="dark-table-row divide-y dark-divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+            <p id="noResultsMessage" class="hidden text-center py-4 text-gray-400">No trades found matching your criteria.</p>
+        </section>
+
+    </div>
+
+    <footer class="text-center py-8 mt-10 text-sm text-gray-500">
+        <p>Trading data powered by Google Sheets.</p>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION ---
+        // !!! IMPORTANT !!! Replace this with your published Google Sheet CSV URL
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ30TjoPmVjO7Do8PU8nSPvu8ld8UNbbgZPJBwfn8DdIoAcPi9DXUYEmsL1U7eN2Z0iJ3fU7c5Girxb/pub?gid=1826611002&single=true&output=csv';
+
+
+        // --- DOM ELEMENTS ---
+        const tableBody = document.getElementById('tradesTableBody');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        // Filter elements
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const coinFilterInput = document.getElementById('coinFilter');
+        const confluencesFilterInput = document.getElementById('confluencesFilter');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+        // Analysis elements
+        const totalTradesElement = document.getElementById('totalTrades');
+        const totalWinsElement = document.getElementById('totalWins');
+        const totalLossesElement = document.getElementById('totalLosses');
+        // Removed winRateElement as the HTML element is removed
+        // const winRateElement = document.getElementById('winRate');
+
+
+        // Elements for the Win/Loss bar visualization
+        const winRatePercentText = document.getElementById('winRatePercentText');
+        const lossRatePercentText = document.getElementById('lossRatePercentText');
+        const winBar = document.getElementById('winBar');
+        const lossBar = document.getElementById('lossBar');
+
+
+        const timePeriodButtons = document.querySelectorAll('.filter-button');
+
+        let allTrades = [];
+        let currentTimePeriod = 'all';
+
+
+        // --- DATA FETCHING AND PARSING ---
+        async function fetchTrades() {
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            noResultsMessage.style.display = 'none';
+            tableBody.innerHTML = '';
+
+            console.log('Attempting to fetch data from:', GOOGLE_SHEET_CSV_URL); // Log the URL being fetched
+
+            if (GOOGLE_SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE') || !GOOGLE_SHEET_CSV_URL || !GOOGLE_SHEET_CSV_URL.startsWith('https://docs.google.com/spreadsheets/d/')) {
+                 showError('Error: Google Sheet CSV URL is not configured correctly. Please update the GOOGLE_SHEET_CSV_URL variable in the script and ensure it is a published CSV link.');
+                 loadingMessage.style.display = 'none';
+                 return;
+            }
+
+            try {
+                // Add timestamp to prevent caching
+                const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&timestamp=${new Date().getTime()}`);
+                console.log('Fetch response status:', response.status); // Log the response status
+                if (!response.ok) {
+                    let errorText = `Network response was not ok: ${response.status}`;
+                    try { errorText += ` - ${await response.text()}`; } catch(e) {} // Attempt to get response body for more info
+                    console.error('Fetch failed:', errorText); // Log the specific fetch error
+                    throw new Error(errorText);
+                }
+                const csvData = await response.text();
+                console.log('Fetched CSV Data Preview:', csvData.substring(0, 500) + '...'); // Log a preview of fetched data
+                allTrades = parseCSV(csvData);
+                console.log('Parsed Trades:', allTrades); // Log the parsed trade objects
+
+                if (allTrades.length === 0 && csvData.trim() !== "" && !csvData.toLowerCase().includes("error")) {
+                     console.warn("CSV data was fetched but resulted in zero trades or only headers.");
+                } else if (allTrades.length === 0 && csvData.trim() === "") {
+                     console.warn("CSV data was fetched but was empty.");
+                } else if (allTrades.length > 0) {
+                     console.log(`Successfully parsed ${allTrades.length} trades.`);
+                }
+
+
+                applyTimePeriodFilter('all'); // Initial filter: Apply 'All' time period
+
+            } catch (error) {
+                console.error('Failed to fetch or parse trades:', error);
+                showError(`Failed to load trades. Check the CSV URL, sheet permissions, and column headers. Error: ${error.message}`);
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split(/\r?\n/);
+             console.log(`CSV has ${lines.length} lines.`); // Log number of lines
+            if (lines.length < 2) {
+                 console.log("CSV has no data rows or headers, or is empty.");
+                 return [];
+            }
+
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+             console.log('CSV Headers:', headers); // Log the parsed headers
+            const trades = [];
+
+            const columnMappings = {
+                timestamp: ['timestamp'], // Timestamp from the form submission
+                tradeDate: ['date', 'trade date'], // Manual Date input from form
+                coinName: ['coin name', 'coin'],
+                result: ['result', 'outcome'],
+                confluences: ['confluences'],
+                timeFrame: ['time frame', 'timeframe', 'tf'],
+                remarks: ['remarks', 'notes'],
+                chartLink: ['chart link', 'link', 'chart'] // Added 'chart'
+            };
+
+            function findHeaderIndex(headerNames) {
+                for (const name of headerNames) {
+                    const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+                    if (index !== -1) return index;
+                }
+                 // Fallback: Check for headers that *include* the target name
+                 for (const name of headerNames) {
+                      const index = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+                      if (index !== -1) {
+                          console.warn(`Found header '${headers[index]}' matching '${name}' via substring match.`);
+                          return index;
+                      }
+                 }
+                return -1;
+            }
+
+            const timestampIdx = findHeaderIndex(columnMappings.timestamp);
+            const dateIdx = findHeaderIndex(columnMappings.tradeDate);
+            const coinNameIdx = findHeaderIndex(columnMappings.coinName);
+            const resultIdx = findHeaderIndex(columnMappings.result);
+            const confluencesIdx = findHeaderIndex(columnMappings.confluences);
+            const timeFrameIdx = findHeaderIndex(columnMappings.timeFrame);
+            const remarksIdx = findHeaderIndex(columnMappings.remarks);
+            const chartLinkIdx = findHeaderIndex(columnMappings.chartLink);
+
+             console.log('Header Indices Found:', {
+                 timestamp: timestampIdx,
+                 date: dateIdx,
+                 coinName: coinNameIdx,
+                 result: resultIdx,
+                 confluences: confluencesIdx,
+                 timeFrame: timeFrameIdx,
+                 remarks: remarksIdx,
+                 chartLink: chartLinkIdx
+             });
+
+
+             // Check for essential columns
+             if (dateIdx === -1 && timestampIdx === -1) {
+                 showError("Essential 'Date' or 'Timestamp' column not found in CSV headers. Please check your Google Sheet columns.");
+                 return [];
+             }
+             if (coinNameIdx === -1) {
+                 showError("Essential 'Coin Name' column not found in CSV headers. Please check your Google Sheet columns.");
+                 return [];
+             }
+             if (resultIdx === -1) {
+                 showError("Essential 'Result' column not found in CSV headers. Please check your Google Sheet columns.");
+                 return [];
+             }
+
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+
+                 let values;
+                 // Improved regex to handle commas within quoted fields - simple version
+                 try {
+                     values = [];
+                     let currentValue = '';
+                     let inQuotes = false;
+                     for (let j = 0; j < lines[i].length; j++) {
+                         const char = lines[i][j];
+                         if (char === '"') {
+                             inQuotes = !inQuotes;
+                              // Basic check for double quote escaping ""
+                             if (j + 1 < lines[i].length && lines[i][j + 1] === '"' && inQuotes) {
+                                  currentValue += '"';
+                                  j++; // Skip the next quote
+                              }
+                         } else if (char === ',' && !inQuotes) {
+                             values.push(currentValue); // Do not trim yet
+                             currentValue = '';
+                         } else {
+                             currentValue += char;
+                         }
+                     }
+                     values.push(currentValue); // Add the last value
+
+                      // Now trim values after parsing
+                      values = values.map(val => val.trim().replace(/^"|"$/g, ''));
+                      // console.log(`Parsed values for line ${i+1}:`, values); // Log values for each line - can be chatty
+
+
+                 } catch (e) {
+                     console.error("Failed to parse CSV line:", lines[i], e);
+                     continue; // Skip this line if parsing fails
+                 }
+
+
+                const trade = {
+                    // Prefer manual date if available, otherwise use timestamp date part
+                    date: dateIdx !== -1 && values[dateIdx] ? values[dateIdx] : (timestampIdx !== -1 && values[timestampIdx] ? values[timestampIdx].split(' ')[0] : ''),
+                    coinName: coinNameIdx !== -1 && values[coinNameIdx] ? values[coinNameIdx] : 'N/A',
+                    result: resultIdx !== -1 && values[resultIdx] ? values[resultIdx].trim() : 'N/A',
+                    confluences: confluencesIdx !== -1 && values[confluencesIdx] ? values[confluencesIdx] : 'N/A',
+                    timeFrame: timeFrameIdx !== -1 && values[timeFrameIdx] ? values[timeFrameIdx] : 'N/A',
+                    remarks: remarksIdx !== -1 && values[remarksIdx] ? values[remarksIdx] : 'N/A',
+                    chartLink: chartLinkIdx !== -1 && values[chartLinkIdx] ? values[chartLinkIdx] : 'N/A'
+                    // Timestamp is not needed for display or filtering, but could be stored if desired
+                };
+
+                // Date Parsing: Try to create a valid Date object for filtering
+                let tradeDateObj = null;
+                if (trade.date && trade.date !== 'N/A') {
+                    // Attempt to parse MM/DD/YYYY or YYYY-MM-DD or similar
+                    const datePartsSlash = trade.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
+                    const datePartsDash = trade.date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); // YYYY-MM-DD
+
+                    if (datePartsSlash) {
+                         // Month is 0-indexed in JS Date: new Date(year, monthIndex, day)
+                         tradeDateObj = new Date(datePartsSlash[3], datePartsSlash[1] - 1, datePartsSlash[2]);
+                    } else if (datePartsDash) {
+                         tradeDateObj = new Date(datePartsDash[1], datePartsDash[2] - 1, datePartsDash[3]);
+                    } else {
+                        // Fallback: Try general Date constructor - less reliable
+                        const parsed = new Date(trade.date);
+                        if (!isNaN(parsed.getTime())) {
+                            tradeDateObj = parsed;
+                        } else {
+                            console.warn(`Could not reliably parse date string "${trade.date}" on line ${i + 1}. Skipping date filtering for this trade.`);
+                            // If date is essential and can't be parsed, you might want to skip the trade
+                            // continue; // Uncomment to skip trades with unparseable dates
+                        }
+                    }
+                }
+
+
+                 // Only add trade if essential data is present and date was parsed successfully (if a date was expected)
+                 // If dateIdx and timestampIdx are both -1, we won't have a date, but we should still add the trade if others are present
+                 const hasEssentialData = trade.coinName !== 'N/A' && trade.result !== 'N/A';
+                 const dateIsValid = (dateIdx === -1 && timestampIdx === -1) || (tradeDateObj && !isNaN(tradeDateObj.getTime()));
+
+                 if (hasEssentialData && dateIsValid) {
+                     trade.dateObject = tradeDateObj; // Store date object for filtering
+                      // Format date for display (optional, but good practice)
+                     if (trade.dateObject) {
+                          trade.displayDate = trade.dateObject.toLocaleDateString(); // Or formatDateForInput(trade.dateObject) if YYYY-MM-DD preferred
+                     } else {
+                         trade.displayDate = trade.date; // Use original string if dateObject is null (e.g., no date column in sheet)
+                     }
+                     trades.push(trade);
+                     // console.log('Added valid trade:', trade); // Log valid trades
+                 } else {
+                     console.warn("Skipping trade due to missing essential data or invalid date:", trade, `(Line ${i+1})`);
+                 }
+            }
+
+             // Sort by date object if available, otherwise potentially by original date string or do not sort
+            trades.sort((a, b) => {
+                 if (a.dateObject && b.dateObject) {
+                      return a.dateObject.getTime() - b.dateObject.getTime(); // Compare timestamps
+                 }
+                 // Fallback sort if dateObjects are not reliable, or keep original order
+                 // return 0; // Keep original order
+                 // Or attempt string comparison (less accurate for dates)
+                 return a.date.localeCompare(b.date);
+            });
+
+
+            return trades;
+        }
+
+         // Helper function to format a Date object as YYYY-MM-DD for input values
+         function formatDateForInput(date) {
+             if (!date || isNaN(date.getTime())) return '';
+             const year = date.getFullYear();
+             const month = ('0' + (date.getMonth() + 1)).slice(-2); // Months are 0-indexed
+             const day = ('0' + date.getDate()).slice(-2);
+             return `${year}-${month}-${day}`;
+         }
+
+
+        // --- FILTERING LOGIC ---
+
+        // This function now just sets the date inputs and active button, then calls applyFilters
+        function applyTimePeriodFilter(period) {
+             const now = new Date();
+             let startDate = null;
+             // Set end date to the end of the current day for inclusive filtering
+             let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+
+             if (period === '7d') {
+                 startDate = new Date(now);
+                 startDate.setDate(now.getDate() - 7);
+                 startDate.setHours(0, 0, 0, 0); // Set to start of the day
+             } else if (period === '30d') {
+                  startDate = new Date(now);
+                 startDate.setDate(now.getDate() - 30);
+                 startDate.setHours(0, 0, 0, 0);
+             } else if (period === '90d') {
+                  startDate = new Date(now);
+                 startDate.setDate(now.getDate() - 90);
+                 startDate.setHours(0, 0, 0, 0);
+             }
+             // 'all' means startDate remains null, endDate covers all future dates too
+
+             // Update custom date inputs based on the selected period
+             startDateInput.value = startDate ? formatDateForInput(startDate) : '';
+             endDateInput.value = endDate ? formatDateForInput(endDate) : '';
+
+
+             // Update active button class
+             timePeriodButtons.forEach(button => {
+                 if (button.dataset.timePeriod === period) {
+                     button.classList.add('active');
+                     button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                     button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                 } else {
+                     button.classList.remove('active');
+                     button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                     button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                 }
+             });
+
+             // Apply all filters (including the dates just set)
+             applyFilters();
+        }
+
+         // This function reads ALL filter inputs and applies the filter to allTrades
+         function applyFilters() {
+             let filteredTrades = allTrades;
+             console.log('Applying filters...'); // Log filter application start
+
+
+             // 1. Apply Date Range Filter (Custom inputs take precedence)
+             const customStartDateValue = startDateInput.value;
+             const customEndDateValue = endDateInput.value;
+
+             let filterStartDate = null;
+             let filterEndDate = null;
+
+             if (customStartDateValue) {
+                 const date = new Date(customStartDateValue);
+                 if (!isNaN(date.getTime())) {
+                     filterStartDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0); // Start of the selected day
+                 } else {
+                      console.warn("Invalid custom start date entered.");
+                 }
+             }
+
+             if (customEndDateValue) {
+                  const date = new Date(customEndDateValue);
+                 if (!isNaN(date.getTime())) {
+                     filterEndDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999); // End of the selected day
+                 } else {
+                      console.warn("Invalid custom end date entered.");
+                 }
+             }
+             console.log('Date Filter Range:', filterStartDate, filterEndDate); // Log the date range being used
+
+             filteredTrades = filteredTrades.filter(trade => {
+                 // Allow trades without a dateObject to pass date filter if no date filter is set
+                 if (!trade.dateObject) {
+                     return !filterStartDate && !filterEndDate;
+                 }
+
+
+                 const tradeTime = trade.dateObject.getTime();
+
+                 // Check if tradeDate is on or after the start date
+                 const afterStartDate = filterStartDate ? tradeTime >= filterStartDate.getTime() : true;
+
+                 // Check if tradeDate is on or before the end date
+                 const beforeEndDate = filterEndDate ? tradeTime <= filterEndDate.getTime() : true;
+
+                 return afterStartDate && beforeEndDate;
+             });
+             console.log(`Filtered by date: ${filteredTrades.length} trades remaining.`); // Log trades after date filter
+
+
+             // 2. Apply Keyword Filters to the date-filtered trades
+             const coinQuery = coinFilterInput.value.toLowerCase().trim();
+             const confluencesQuery = confluencesFilterInput.value.toLowerCase().trim();
+             console.log('Keyword Filters:', {coin: coinQuery, confluences: confluencesQuery}); // Log keyword queries
+
+
+             const finalFilteredTrades = filteredTrades.filter(trade => {
+                 const tradeCoinName = trade.coinName ? trade.coinName.toLowerCase() : '';
+                 const tradeConfluences = trade.confluences ? trade.confluences.toLowerCase() : '';
+
+                 const coinMatch = coinQuery === '' || tradeCoinName.includes(coinQuery);
+                 const confluencesMatch = confluencesQuery === '' || tradeConfluences.includes(confluencesQuery);
+
+                 return coinMatch && confluencesMatch;
+             });
+
+             console.log(`Filtered by keywords: ${finalFilteredTrades.length} trades remaining.`); // Log trades after keyword filter
+
+
+             renderTable(finalFilteredTrades);
+             updateAnalysis(finalFilteredTrades);
+         }
+
+        function resetFilters() {
+            console.log('Resetting filters...'); // Log reset action
+            // Clear keyword inputs
+            coinFilterInput.value = '';
+            confluencesFilterInput.value = '';
+            // Clear custom date inputs - applyTimePeriodFilter('all') will set them to empty
+            startDateInput.value = '';
+            endDateInput.value = '';
+
+            // Reset time period filter to 'All' and re-apply all filtering
+            applyTimePeriodFilter('all');
+        }
+
+        // --- ANALYSIS LOGIC ---
+        function calculateMetrics(trades) {
+            const total = trades.length;
+            let wins = 0;
+            let losses = 0;
+            let breakEvens = 0;
+
+            trades.forEach(trade => {
+                const result = trade.result.toLowerCase();
+                if (result === 'win' || result.includes('profit')) {
+                    wins++;
+                } else if (result === 'loss' || result.includes('loss')) {
+                    losses++;
+                } else {
+                    breakEvens++; // Count break evens
+                 }
+            });
+
+             // Calculate percentages out of *total* trades for the text display
+             // Win rate is still calculated here for the winRatePercentText above the bar
+             const winRatePercent = total > 0 ? ((wins / total) * 100).toFixed(1) : 'N/A'; // 1 decimal place for %
+             const lossRatePercent = total > 0 ? ((losses / total) * 100).toFixed(1) : 'N/A'; // 1 decimal place for %
+
+             // Calculate percentages out of *resolved* trades (Wins + Losses) for the bar width
+             const resolvedTrades = wins + losses; // Only consider wins and losses for bar width proportion
+             const winBarWidthPercent = resolvedTrades > 0 ? (wins / resolvedTrades) * 100 : 0;
+             const lossBarWidthPercent = resolvedTrades > 0 ? (losses / resolvedTrades) * 100 : 0;
+             // If resolvedTrades is 0 (all Break Evens or no trades), both bar widths are 0.
+
+
+            return {
+                total,
+                wins,
+                losses,
+                breakEvens,
+                // winRate is no longer returned for the dedicated box, but winRatePercent is used for the text label
+                winRatePercentText: winRatePercent !== 'N/A' ? `${winRatePercent}% Win` : '- Win %', // Text above bar
+                lossRatePercentText: lossRatePercent !== 'N/A' ? `${lossRatePercent}% Loss` : '- Loss %', // Text above bar
+                 winBarWidthPercent, // Width for the green bar
+                 lossBarWidthPercent // Width for the red bar
+            };
+        }
+
+        function renderMetrics(metrics) {
+            // Check if elements exist before updating
+            if (totalTradesElement) totalTradesElement.textContent = metrics.total;
+            if (totalWinsElement) totalWinsElement.textContent = metrics.wins;
+            if (totalLossesElement) totalLossesElement.textContent = metrics.losses;
+            // winRateElement is removed, so we don't try to update it
+            // if (winRateElement) winRateElement.textContent = metrics.winRate;
+        }
+
+         // Function to render the Win/Loss bar
+         function renderWinLossBar(metrics) {
+              if (winBar) winBar.style.width = `${metrics.winBarWidthPercent}%`;
+              if (lossBar) lossBar.style.width = `${metrics.lossBarWidthPercent}%`;
+              if (winRatePercentText) winRatePercentText.textContent = metrics.winRatePercentText;
+              if (lossRatePercentText) lossRatePercentText.textContent = metrics.lossRatePercentText;
+
+              // Ensure text color is visible against background color (optional)
+              if (winRatePercentText) winRatePercentText.classList.toggle('text-gray-800', metrics.winBarWidthPercent > 50 && metrics.winBarWidthPercent < 90); // Example adjustment
+              if (lossRatePercentText) lossRatePercentText.classList.toggle('text-gray-800', metrics.lossBarWidthPercent > 50 && metrics.lossBarWidthPercent < 90); // Example adjustment
+         }
+
+
+        function updateAnalysis(filteredTrades) {
+            const metrics = calculateMetrics(filteredTrades);
+            renderMetrics(metrics);
+             renderWinLossBar(metrics); // Call the new render bar function
+        }
+
+
+        // --- TABLE RENDERING ---
+        function renderTable(trades) {
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            if (trades.length === 0) {
+                noResultsMessage.style.display = 'block';
+                return;
+            } else {
+                noResultsMessage.style.display = 'none';
+            }
+
+            trades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.classList.add('dark-table-row'); // Apply dark mode row styling
+
+                // Date Cell - Use displayDate which is already formatted
+                const dateCell = document.createElement('td');
+                dateCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-medium', 'text-gray-200');
+                dateCell.textContent = trade.displayDate || trade.date || 'N/A'; // Use displayDate, fallback to original, then N/A
+                row.appendChild(dateCell);
+
+                // Coin Name Cell
+                const coinCell = document.createElement('td');
+                coinCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-300');
+                coinCell.textContent = trade.coinName;
+                row.appendChild(coinCell);
+
+                // Result Cell - Add color based on result
+                const resultCell = document.createElement('td');
+                resultCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'font-semibold');
+                const resultText = trade.result.toLowerCase();
+                if (resultText === 'win' || resultText.includes('profit')) {
+                    resultCell.classList.add('text-green-500');
+                } else if (resultText === 'loss' || resultText.includes('loss')) {
+                    resultCell.classList.add('text-red-500');
+                } else {
+                     resultCell.classList.add('text-yellow-500'); // For Break Even or other results
+                 }
+                resultCell.textContent = trade.result;
+                row.appendChild(resultCell);
+
+                // Confluences Cell
+                const confluencesCell = document.createElement('td');
+                confluencesCell.classList.add('px-4', 'py-4', 'text-sm', 'text-gray-300');
+                 // Allow line breaks in this cell
+                 confluencesCell.style.whiteSpace = 'normal';
+                confluencesCell.textContent = trade.confluences;
+                row.appendChild(confluencesCell);
+
+                // Time Frame Cell
+                const timeFrameCell = document.createElement('td');
+                timeFrameCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-300');
+                timeFrameCell.textContent = trade.timeFrame;
+                row.appendChild(timeFrameCell);
+
+                // Remarks Cell
+                const remarksCell = document.createElement('td');
+                remarksCell.classList.add('px-4', 'py-4', 'text-sm', 'text-gray-300');
+                 // Allow line breaks in this cell
+                 remarksCell.style.whiteSpace = 'normal';
+                remarksCell.textContent = trade.remarks;
+                row.appendChild(remarksCell);
+
+
+                // Chart Link Cell
+                const chartLinkCell = document.createElement('td');
+                chartLinkCell.classList.add('px-4', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-indigo-400');
+                if (trade.chartLink && trade.chartLink !== 'N/A' && trade.chartLink.startsWith('http')) {
+                    const link = document.createElement('a');
+                    link.href = trade.chartLink;
+                    link.textContent = 'View Chart';
+                    link.target = '_blank'; // Open in a new tab
+                    link.rel = 'noopener noreferrer'; // Security best practice
+                    link.classList.add('hover:underline');
+                    chartLinkCell.appendChild(link);
+                } else {
+                    chartLinkCell.textContent = 'N/A';
+                    chartLinkCell.classList.add('text-gray-500'); // Dim N/A links
+                }
+                row.appendChild(chartLinkCell);
+
+                // Hidden Timestamp Cell (Optional, just to match header structure if needed later)
+                const timestampCell = document.createElement('td');
+                timestampCell.classList.add('hidden'); // Keep it hidden
+                timestampCell.textContent = ''; // No need to display timestamp
+                row.appendChild(timestampCell);
+
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // --- ERROR HANDLING ---
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', fetchTrades);
+
+        // Quick Date Filters
+        timePeriodButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const period = button.dataset.timePeriod;
+                applyTimePeriodFilter(period);
+            });
+        });
+
+        // Apply Filters Button
+        applyFiltersBtn.addEventListener('click', applyFilters);
+
+        // Reset Filters Button
+        resetFiltersBtn.addEventListener('click', resetFilters);
+
+
+         // When custom date inputs change, deactivate quick buttons but don't auto-apply
+         startDateInput.addEventListener('change', () => {
+             timePeriodButtons.forEach(button => {
+                 button.classList.remove('active');
+                 button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                 button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+             });
+              // Filters will be applied when "Apply Filters" is clicked
+         });
+
+         endDateInput.addEventListener('change', () => {
+             timePeriodButtons.forEach(button => {
+                 button.classList.remove('active');
+                 button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                 button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+             });
+             // Filters will be applied when "Apply Filters" is clicked
+         });
+
+
+         // Keyword inputs do not trigger auto-filtering, requires Apply button click
+         // coinFilterInput.addEventListener('input', applyFilters); // Optional: uncomment for live filtering
+         // confluencesFilterInput.addEventListener('input', applyFilters); // Optional: uncomment for live filtering
+
+
+    </script>
 </body>
 </html>
